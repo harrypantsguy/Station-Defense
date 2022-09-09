@@ -58,7 +58,7 @@ Material:
     - _EffectSpeed: 1
     - _EnableExternalAlpha: 0
     - _Noise1Power: 1
-    - _Noise1Scale: 7.5
+    - _Noise1Scale: 5
     - _Noise1Speed: 0.1
     - _Noise1XSpeed: 0
     - _Noise1YSpeed: -0.1
