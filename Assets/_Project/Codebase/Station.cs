@@ -69,7 +69,7 @@ namespace _Project.Codebase
 
         public bool TakeDamage(Vector2 location, int tileSplash)
         {
-            Debug.Log("hit");
+           // Debug.Log("hit");
             if (!TryGetStructureAtPos(location, out Structure hitStructure))
             {
                 //Debug.Break();
