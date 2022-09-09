@@ -61,15 +61,17 @@ Material:
     - _Noise1Scale: 5
     - _Noise1Speed: 0.1
     - _Noise1XSpeed: 0
-    - _Noise1YSpeed: -0.1
+    - _Noise1YSpeed: 0
     - _Noise2Power: 2
     - _Noise2Scale: 5
     - _Noise2Speed: -0.25
-    - _Noise2XSpeed: 0.25
+    - _Noise2XSpeed: 0
     - _Noise2YSpeed: 0.25
     - _NoiseScale: 10
     - _NoiseSpeed: -0.1
     - _TestOffset: 0
+    - _TwirlSpeed: 0.1
+    - _TwirlStrength: 3
     m_Colors:
     - _BackgroundColor: {r: 0, g: 0.16009235, b: 0.25, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
