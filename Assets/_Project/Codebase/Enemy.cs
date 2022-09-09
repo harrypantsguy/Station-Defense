@@ -25,7 +25,7 @@ namespace _Project.Codebase
             }
             
             float timeSample = Time.time * Mathf.PI / 5f;
-            float radius = 8f;
+            float radius = 20f;
             transform.position =
                 new Vector2(Mathf.Cos(timeSample) * radius, Mathf.Sin(timeSample) * radius);
             transform.up = -transform.position;

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace _Project.Codebase
 {
@@ -7,6 +8,13 @@ namespace _Project.Codebase
         public float radius;
         public int tileSplash;
         private bool queuedForDestruction;
+
+        private Station station;
+
+        private void Start()
+        {
+            station = Station.Singleton;
+        }
 
         private const float SPEED = 40f;
         private void FixedUpdate()
@@ -17,6 +25,11 @@ namespace _Project.Codebase
                 return;
             }
 
+            if (station.IsStructureAtWorldPos(transform.position))
+            {
+                TryHitStation(transform.position);
+            }
+            
             float distance = (SPEED * Time.fixedDeltaTime);
             Vector2 velocity = transform.right * distance;
             Vector2 newPosition = (Vector2)transform.position + velocity;
@@ -29,17 +42,25 @@ namespace _Project.Codebase
                 if (hit.transform.parent != null && hit.transform.parent.parent != null
                                                  && hit.transform.parent.parent.TryGetComponent(out Station station))
                 {
-                    Debug.DrawRay(hit.point, hit.normal * .1f, Color.yellow, .25f);
-                    if (station.TakeDamage(hit.point - hit.normal * .05f, tileSplash))
-                    {
-                        queuedForDestruction = true;
-                        transform.position = hit.point + hit.normal * radius;
+                    if (TryHitStation(hit.point - hit.normal * .05f))
                         return;
-                    }
+                    Debug.DrawRay(hit.point, hit.normal * .1f, Color.yellow, .25f);
                 }
             }
             
             transform.position = newPosition;
+        }
+
+        private bool TryHitStation(Vector2 pos)
+        {
+            if (station.TakeDamage(pos, tileSplash))
+            {
+                queuedForDestruction = true;
+                transform.position = pos;
+                return true;
+            }
+
+            return false;
         }
     }
 }

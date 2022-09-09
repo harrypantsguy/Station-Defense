@@ -4,10 +4,10 @@ namespace _Project.Codebase
 {
     public class StructureSelectionButton : CustomUI
     {
-        [SerializeField] private StructureType type;
+        [SerializeField] private StructureName structureName;
         public void SetStructure()
         {
-            Player.Singleton.SetStructure(type);
+            Player.Singleton.SetStructure(structureName);
         }
     }
 }
