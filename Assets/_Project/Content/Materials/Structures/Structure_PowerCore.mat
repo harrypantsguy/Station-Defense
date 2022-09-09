@@ -54,6 +54,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _BorderDistMultiplier: 3
+    - _BorderPower: 2.5
     - _EffectPower: 0.5
     - _EffectSpeed: 1
     - _EnableExternalAlpha: 0
@@ -74,6 +76,7 @@ Material:
     - _TwirlStrength: 0
     m_Colors:
     - _BackgroundColor: {r: 0, g: 0.16009235, b: 0.25, a: 0}
+    - _BorderColor: {r: 0, g: 0.37529325, b: 1, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EffectColor: {r: 0, g: 3.6364226, b: 17.148375, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
