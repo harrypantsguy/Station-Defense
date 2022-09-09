@@ -6,6 +6,5 @@ namespace _Project.Codebase
     public enum StructureType
     {
         SteelWall,
-        StationHeart,
     }
 }
