@@ -54,6 +54,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _BorderDistMultiplier: 3
+    - _BorderPower: 2.5
     - _EffectPower: 0.5
     - _EffectSpeed: 1
     - _EnableExternalAlpha: 0
@@ -74,11 +76,12 @@ Material:
     - _TwirlStrength: 0
     m_Colors:
     - _BackgroundColor: {r: 0, g: 0.16009235, b: 0.25, a: 0}
+    - _BorderColor: {r: 0, g: 0.37529325, b: 1, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EffectColor: {r: 0, g: 3.6364226, b: 17.148375, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
-    - _Noise1Color: {r: 0, g: 2.9490197, b: 5.992157, a: 0}
-    - _Noise2Color: {r: 0, g: 1.3532083, b: 4.237095, a: 0}
+    - _Noise1Color: {r: 0, g: 2.925395, b: 5.992157, a: 0}
+    - _Noise2Color: {r: 0, g: 0.95686275, b: 2.9960785, a: 0}
     - _NoiseColor: {r: 0, g: 3.5089722, b: 32, a: 0}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
