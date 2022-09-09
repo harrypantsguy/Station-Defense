@@ -80,8 +80,8 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EffectColor: {r: 0, g: 3.6364226, b: 17.148375, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
-    - _Noise1Color: {r: 0, g: 2.925395, b: 5.992157, a: 0}
-    - _Noise2Color: {r: 0, g: 0.95686275, b: 2.9960785, a: 0}
+    - _Noise1Color: {r: 0, g: 2.9490197, b: 5.992157, a: 0}
+    - _Noise2Color: {r: 0, g: 1.3532083, b: 4.237095, a: 0}
     - _NoiseColor: {r: 0, g: 3.5089722, b: 32, a: 0}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
