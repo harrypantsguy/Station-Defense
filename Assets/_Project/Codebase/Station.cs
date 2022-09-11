@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using Debug = UnityEngine.Debug;
 
 namespace _Project.Codebase
 {
@@ -10,44 +9,62 @@ namespace _Project.Codebase
         [SerializeField] private Tilemap _wallMap;
         [SerializeField] private Tilemap _floorMap;
         
-        private Dictionary<Vector2Int, Structure> _structureGrid = new Dictionary<Vector2Int, Structure>();
+        private Dictionary<Vector2Int, FloorTile> _structureGrid = new Dictionary<Vector2Int, FloorTile>();
 
-        private const float TILEMAP_SCALE_MULTIPLIER = .25f;
-
+        private void Start()
+        {
+             TileConstruct powerCoreFloorTile = new FloorTile(PlaceableName.GratedFloor, true);
+             powerCoreFloorTile.TryPlace(this, new Vector2Int(5, 5), true);
+             
+            //FillRectWithStructure(new Vector2Int(-2, -2), new Vector2Int(1,1), 
+            //    powerCoreFloorTile, true);
+        }
         public Vector3Int WorldToGridPos(Vector2 pos) => _wallMap.WorldToCell(pos);
-        private Vector2Int GetClosestTileToPos(Vector2 pos) => new Vector2Int(Mathf.CeilToInt(pos.x / TILEMAP_SCALE_MULTIPLIER), 
-            Mathf.CeilToInt(pos.y / TILEMAP_SCALE_MULTIPLIER));
         public Vector2Int WorldToGridPos2D(Vector2 pos) => (Vector2Int)WorldToGridPos(pos);
         public Vector2 GridToWorldPos(Vector2Int gridPos) => gridPos + new Vector2(.5f, .5f);
         public Vector2 SnapPointToGrid(Vector2 pos) => GridToWorldPos(WorldToGridPos2D(pos));
+
+        public bool TryGetFloorAtGridPos(Vector2Int gridPos, out FloorTile floor) =>
+            _structureGrid.TryGetValue(gridPos, out floor);
+
+        public bool IsFloorAtGridPos(Vector2Int gridPos) => TryGetFloorAtGridPos(gridPos, out FloorTile floor);
         
-        private bool TryGetStructureAtPos(Vector2 pos, out Structure structure) =>
-            TryGetStructureAtGridPos(WorldToGridPos2D(pos), out structure);
-        private bool TryGetStructureAtGridPos(Vector2Int pos, out Structure structure)
+        public void SetFloorAtGridPos(Vector2Int gridPos, FloorTile tile)
         {
-            if (_structureGrid.TryGetValue(pos, out structure))
-                return true;
+            _structureGrid[gridPos] = tile;
+            _floorMap.SetTile((Vector3Int)gridPos, References.Singleton.GetTile(tile.PlaceableName));
+        }
+
+        public void TryRemoveFloorAtGridPos(Vector2Int gridPos)
+        {
+            if (TryGetFloorAtGridPos(gridPos, out FloorTile floor))
+            {
+                _floorMap.SetTile((Vector3Int)gridPos, null);
+                floor.Delete(this);
+                _structureGrid.Remove(gridPos);
+            }
+        }
+
+        public bool TryGetPlaceableAtGridPos(Vector2Int gridPos, out IPlaceable placeable)
+        {
+            placeable = null;
+            if (TryGetFloorAtGridPos(gridPos, out FloorTile floor))
+            {
+                if (floor.Placeable != null)
+                {
+                    placeable = floor.Placeable;
+                    return true;
+                }
+            }
+
             return false;
         }
 
-        public bool IsStructureAtGridPos(Vector2Int pos) => TryGetStructureAtGridPos(pos, out Structure s);
-        public bool IsStructureAtWorldPos(Vector2 pos) => TryGetStructureAtPos(pos, out Structure s);
-
-        public bool IsValidPlacementAtWorldPos(Vector2 pos) => IsValidPlacementAtGridPos(WorldToGridPos2D(pos));
-        public bool IsValidPlacementAtGridPos(Vector2Int pos)
+        public void SetWallMapTile(Vector3Int gridPos, TileBase tile)
         {
-            if (pos.x < 2 && pos.x > -3 && pos.y > -3 && pos.y < 2)
-                return false;
-
-            if (IsStructureAtGridPos(pos))
-                return false;
-
-            if (!HasNecessaryNeighborsAtPos(pos))
-                return false;
-
-            return true;
+            _wallMap.SetTile(gridPos, tile);
         }
-
+        
         private bool IsInsidePowerCore(Vector2Int gridPos) =>
             IsInsidePowerCoreColumns(gridPos) && IsInsidePowerCoreRows(gridPos);
         private bool IsInsidePowerCoreColumns(Vector2Int gridPos) => gridPos.x > -3 && gridPos.x < 2;
@@ -61,20 +78,20 @@ namespace _Project.Codebase
             return (gridPos.x == -3 || gridPos.x == 2) && inRowsInsideCore ||
                                        (gridPos.y == 2 || gridPos.y == -3) && inColumnsInsideCore;
         }
-        private bool HasNecessaryNeighborsAtPos(Vector2Int gridPos)
+        public bool HasNeighborsAtPos(Vector2Int gridPos)
         {
-            return IsStructureAtGridPos(gridPos + new Vector2Int(-1, 0)) ||
-                   IsStructureAtGridPos(gridPos + new Vector2Int(0, 1)) ||
-                   IsStructureAtGridPos(gridPos + new Vector2Int(1, 0)) ||
-                   IsStructureAtGridPos(gridPos + new Vector2Int(0, -1)) || IsGridPosAdjacentToPowerCore(gridPos);
+            return IsFloorAtGridPos(gridPos + new Vector2Int(-1, 0)) ||
+                   IsFloorAtGridPos(gridPos + new Vector2Int(0, 1)) ||
+                   IsFloorAtGridPos(gridPos + new Vector2Int(1, 0)) ||
+                   IsFloorAtGridPos(gridPos + new Vector2Int(0, -1));
         }
 
-        public bool IsRectViableToFill(Vector2 corner1, Vector2 corner2, Structure structure) =>
-            IsRectViableToFill(WorldToGridPos2D(corner1), WorldToGridPos2D(corner2), structure);
-        public bool IsRectViableToFill(Vector2Int corner1, Vector2Int corner2, Structure structure,
-            bool returnOnViabilityAssessment = true) => IsRectViableToFill(corner1, corner2, structure,
+        public bool IsRectViableToFill(Vector2 corner1, Vector2 corner2, TileConstruct tileConstruct) =>
+            IsRectViableToFill(WorldToGridPos2D(corner1), WorldToGridPos2D(corner2), tileConstruct);
+        public bool IsRectViableToFill(Vector2Int corner1, Vector2Int corner2, TileConstruct tileConstruct,
+            bool returnOnViabilityAssessment = true) => IsRectViableToFill(corner1, corner2, tileConstruct,
             returnOnViabilityAssessment, out List<Vector2Int> viablePoints);
-        public bool IsRectViableToFill(Vector2Int corner1, Vector2Int corner2, Structure structure, 
+        public bool IsRectViableToFill(Vector2Int corner1, Vector2Int corner2, TileConstruct tileConstruct, 
             bool returnOnViabilityAssessment, out List<Vector2Int> viablePoints)
         {
             viablePoints = new List<Vector2Int>();
@@ -88,7 +105,7 @@ namespace _Project.Codebase
             int extendedMinY = minY - 1;
             int extendedMaxY = maxY + 1;
 
-            bool structureIsNull = structure == null;
+            bool constructIsNull = tileConstruct == null;
             bool hasFoundValidPos = false;
             for (int x = extendedMinX; x <= extendedMaxX; x++)
             {
@@ -101,93 +118,87 @@ namespace _Project.Codebase
                     bool atSmallestY = pos.y == extendedMinY;
                     bool atBiggestY = pos.y == extendedMaxY;
 
-                    if (!structureIsNull && (atSmallestX || atBiggestX) && (atSmallestY || atBiggestY)) continue;
+                    if (!constructIsNull && (atSmallestX || atBiggestX) && (atSmallestY || atBiggestY)) continue;
                     
                     bool isStructureAtGridPos = false;
                     bool checkedGridPosForStructure = false;
                     bool outsideRect = pos.x > maxX || pos.x < minX || pos.y < minY || pos.y > maxY;
 
-                    if (structureIsNull)
+                    if (constructIsNull)
                         hasFoundValidPos = true;
 
                     if (!hasFoundValidPos)
                     {
-                        isStructureAtGridPos = IsStructureAtGridPos(pos);
+                       // isStructureAtGridPos = IsConstructAtGridPos(pos);
                         checkedGridPosForStructure = true;
-                        if (isStructureAtGridPos || !outsideRect && IsGridPosAdjacentToPowerCore(pos))
+                        if (isStructureAtGridPos)
                             hasFoundValidPos = true;
                     }
 
                     if (hasFoundValidPos && returnOnViabilityAssessment)
                         return true;
 
-                    if (outsideRect || IsInsidePowerCore(pos)) continue;
+                    if (outsideRect) continue;
                     
-                    if (!structureIsNull && !checkedGridPosForStructure)
-                        isStructureAtGridPos = IsStructureAtGridPos(pos);
+                    //if (!constructIsNull && !checkedGridPosForStructure)
+                     //   isStructureAtGridPos = IsConstructAtGridPos(pos);
                     
-                    if (structureIsNull || !isStructureAtGridPos)
+                    if (constructIsNull || !isStructureAtGridPos)
                         viablePoints.Add(pos);
                 }
             }
 
             return hasFoundValidPos;
         }
-        public void FillRectWithStructure(Vector2 corner1, Vector2 corner2, Structure structure) => 
-            FillRectWithStructure(WorldToGridPos2D(corner1), WorldToGridPos2D(corner2), structure);
-        public void FillRectWithStructure(Vector2Int corner1, Vector2Int corner2, Structure structure)
+        public void FillRectWithStructure(Vector2 corner1, Vector2 corner2, TileConstruct tileConstruct) => 
+            FillRectWithStructure(WorldToGridPos2D(corner1), WorldToGridPos2D(corner2), tileConstruct);
+        public void FillRectWithStructure(Vector2Int corner1, Vector2Int corner2, TileConstruct tileConstruct, bool ignoreViability = false)
         {
-            if (IsRectViableToFill(corner1, corner2, structure, false, out List<Vector2Int> positionsToSet))
-                foreach (Vector2Int pos in positionsToSet)
-                    SetTileToStructure(pos, structure == null ? null : new Structure(structure));
-        }
-        public bool TrySetGridPosStructure(Vector2 position, Structure structure) => 
-            TrySetGridPosStructure(WorldToGridPos2D(position), structure);
-
-        public bool TrySetGridPosStructure(Vector2Int gridPos, Structure structure)
-        {
-            if (structure == null || IsValidPlacementAtGridPos(gridPos))
+            List<Vector2Int> positionsToSet = new List<Vector2Int>();
+            if (ignoreViability)
             {
-                SetTileToStructure(gridPos, structure);
+                for (int x = Mathf.Min(corner1.x, corner2.x); x <= Mathf.Max(corner1.x, corner2.x); x++)
+                {
+                    for (int y = Mathf.Min(corner1.y, corner2.y); y <= Mathf.Max(corner1.y, corner2.y); y++)
+                    {
+                        Vector2Int pos = new Vector2Int(x, y);
+                        //if (!IsConstructAtGridPos(pos))
+                            positionsToSet.Add(pos);
+                    }
+                }
+            }
+            
+            if (ignoreViability || IsRectViableToFill(corner1, corner2, tileConstruct, false, out positionsToSet))
+            {
+                foreach (Vector2Int pos in positionsToSet)
+                {
+                    tileConstruct.TryPlace(this, pos);
+                    //SetTileConstructAtPos(pos, tileConstruct);
+                }
+            }
+        }
+        public bool TrySetGridPosStructure(Vector2 position, TileConstruct tileConstruct) => 
+            TrySetGridPosStructure(WorldToGridPos2D(position), tileConstruct);
+
+        public bool TrySetGridPosStructure(Vector2Int gridPos, TileConstruct tileConstruct)
+        {
+            //if (tileConstruct == null || IsValidPlacementAtGridPos(gridPos, tileConstruct))
+            {
+               // SetTileConstructAtPos(gridPos, tileConstruct);
                 return true;
             }
 
             return false;
         }
 
-        public void RemoveStructure(Vector2Int tilePos)
-        {
-            SetTileToStructure(tilePos, null);
-        }
-        
-        public void RemoveStructure(Vector2 position)
-        {
-            RemoveStructure(WorldToGridPos2D(position));
-        }
-
-        private void SetTileToStructure(Vector2Int gridPos, Structure structure)
-        {
-            _structureGrid.Remove(gridPos);
-            
-            bool structureIsNull = structure == null;
-            
-            if (!structureIsNull)
-            {
-                structure.gridPos = gridPos;
-
-                _structureGrid.Add(gridPos, structure);
-            }
-
-            _wallMap.SetTile((Vector3Int)gridPos, structureIsNull ? null : References.Singleton.structureTileDictionary[structure.structureName]);
-        }
-
         public bool TakeDamage(Vector2 location, int tileSplash)
         {
+            return true;
            // Debug.Log("hit");
-            if (!TryGetStructureAtPos(location, out Structure hitStructure))
+            //if (!TryGetStructureAtPos(location, out TileConstruct hitStructure))
             {
                 //Debug.Break();
-                //Debug.LogError("failed to locate structure at hit point");
+                //Debug.LogError("failed to locate ConstructTile at hit point");
                 Debug.DrawLine(Vector2.zero, location, Color.red);
                 return false;
             }
@@ -203,14 +214,16 @@ namespace _Project.Codebase
                     bool inCircle = distance <= maxDistance;
                     if (!inCircle) continue;
                     
-                    Vector2Int gridPos = hitStructure.gridPos + localGridPos;
-
-                    if (!TryGetStructureAtGridPos(gridPos, out Structure splashStructure))
+                    //Vector2Int gridPos = hitStructure.gridPos + localGridPos;
+                    
+                    
+                    //if (!TryGetConstructAtGridPos(gridPos, out TileConstruct splashStructure))
                         continue;
                     
-                    splashStructure.health -= 100f * 1f; //Mathf.Pow(.5f, 4f * (distance  / maxDistance));
-                    if (splashStructure.health <= 0f)
-                        RemoveStructure(gridPos);
+                   // splashStructure.health -= 100f * 1f; //Mathf.Pow(.5f, 4f * (distance  / maxDistance));
+                    //if (splashStructure.health <= 0f)
+                    //    RemoveStructure(gridPos);
+                    //    RemoveStructure(gridPos);
                 }
             }
 

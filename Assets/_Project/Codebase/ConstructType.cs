@@ -1,6 +1,6 @@
 ﻿namespace _Project.Codebase
 {
-    public enum StructureType
+    public enum ConstructType
     {
         Wall,
         Floor

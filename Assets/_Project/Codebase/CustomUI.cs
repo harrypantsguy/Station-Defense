@@ -17,5 +17,11 @@ namespace _Project.Codebase
         {
             elementsWithMouseOver.Remove(this);
         }
+        
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void InitializeOnLoad()
+        {
+            elementsWithMouseOver = new List<CustomUI>();
+        }
     }
 }

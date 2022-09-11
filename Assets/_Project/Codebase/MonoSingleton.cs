@@ -6,7 +6,7 @@ namespace _Project.Codebase
     {
         public static T Singleton { get; private set; }
 
-        private void Awake()
+        protected virtual void Awake()
         {
             Singleton = (T)this;
         }

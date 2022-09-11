@@ -16,7 +16,7 @@ namespace TMPro.Examples
         private bool hasTextChanged;
 
         /// <summary>
-        /// Structure to hold pre-computed animation data.
+        /// ConstructTile to hold pre-computed animation data.
         /// </summary>
         private struct VertexAnim
         {

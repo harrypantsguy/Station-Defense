@@ -1,39 +1,34 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace _Project.Codebase 
+namespace _Project.Codebase
 {
-    [Serializable]
-    public class Structure
+    public class Structure : MonoBehaviour, IDestroyable, IPlaceable
     {
-        public float health = 100f;
-        public StructureName structureName;
-        public StructureType type;
-        public Vector2Int gridPos;
-
-        public Structure(StructureName structureName)
+        public PlaceableName PlaceableName { get; set; }
+        public Vector2Int dimensions;
+        public Vector2 pivot;
+        public float Health { get; set; } = 100f;
+        
+        public void TakeDamage()
         {
-            this.structureName = structureName;
         }
 
-        public Structure(Structure original)
+        public void Die()
         {
-            if (original == null) return;
-            
-            health = original.health;
-            structureName = original.structureName;
-            gridPos = original.gridPos;
         }
 
-        public static Structure GetStructureFromType(StructureName structureName)
+
+        public bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos)
         {
-            switch (structureName)
-            {
-                case StructureName.None:
-                    return null;
-                default:
-                    return new Structure(structureName);
-            }
+            return false;
+        }
+
+        public void TryPlace(Station station, in Vector2Int gridPos, bool ignoreValidity)
+        {
+        }
+
+        public void Delete(Station station)
+        {
         }
     }
 }

@@ -25,7 +25,7 @@ namespace _Project.Codebase
                 return;
             }
 
-            if (station.IsStructureAtWorldPos(transform.position))
+            //if (station.IsStructureAtWorldPos(transform.position))
             {
                 TryHitStation(transform.position);
             }

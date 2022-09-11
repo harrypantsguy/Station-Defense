@@ -10,18 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 59da05d7303949dc9136d61ae4546764, type: 3}
-  m_Name: StructureData
+  m_Name: Construct Tile Data
   m_EditorClassIdentifier: 
   structureData:
-  - structureName: 0
+  - placeableName: 0
     type: 0
     sprite: {fileID: 21300000, guid: 38248e5430b45fe4daaef7ad233752b5, type: 3}
     tile: {fileID: 0}
-  - structureName: 1
-    type: 1
+  - placeableName: 1
+    type: 0
     sprite: {fileID: 21300000, guid: 5febefc4f475fca4c919f0162191842d, type: 3}
     tile: {fileID: 11400000, guid: d3cb6a699c6ca604cbe9d540e97f711c, type: 2}
-  - structureName: 2
-    type: 2
+  - placeableName: 2
+    type: 1
     sprite: {fileID: 21300000, guid: b7c92d7d466b2f8408d4072dbbce3fe9, type: 3}
     tile: {fileID: 11400000, guid: 0a1f31b070b589643b1190c5a95057cb, type: 2}
+  - placeableName: 3
+    type: 1
+    sprite: {fileID: 21300000, guid: 823589970fa95834380f755132f94d53, type: 3}
+    tile: {fileID: 11400000, guid: 9f1376d4960bf024fa4c977ccb311e88, type: 2}

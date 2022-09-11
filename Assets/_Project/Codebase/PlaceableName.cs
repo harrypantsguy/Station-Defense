@@ -3,10 +3,11 @@
 namespace _Project.Codebase
 {
     [Serializable]
-    public enum StructureName
+    public enum PlaceableName
     {
         None,
         SteelWall,
-        FloorGrated,
+        GratedFloor,
+        IndustrialFloor
     }
 }
