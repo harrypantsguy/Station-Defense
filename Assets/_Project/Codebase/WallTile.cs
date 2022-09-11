@@ -1,4 +1,5 @@
-﻿
+﻿using System.Collections.Generic;
+using FishingGame.Utilities;
 using UnityEngine;
 
 namespace _Project.Codebase
@@ -6,53 +7,68 @@ namespace _Project.Codebase
     public class WallTile : TileConstruct, IDestroyable
     {
         public float Health { get; set; }
+        public FloorTile floor;
         public void TakeDamage()
         {
         }
         public void Die()
         {
         }
+        public override bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos) => 
+            station.DoesGridPosHaveFloorButNoPlaceable(gridPos);
 
-        public override bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos)
-        {
-            if (station.TryGetFloorAtGridPos(gridPos, out FloorTile floor))
-            {
-                return floor.Placeable == null;
-            }
-
-            return false;
-        }
-
+        private bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos, out FloorTile foundFloor) => 
+            station.DoesGridPosHaveFloorButNoPlaceable(gridPos, out foundFloor);
+        
         public override void TryPlace(Station station, in Vector2Int gridPos, bool ignoreValidity)
         {
-            if (!ignoreValidity && station.TryGetFloorAtGridPos(gridPos, out FloorTile floor))
+            if (!ignoreValidity && !IsValidPlacementAtGridPos(station, gridPos, out floor)) return;
+            if (ignoreValidity && floor == null)
+                station.TryGetFloorAtGridPos(gridPos, out floor);
+            
+            this.gridPos = gridPos;
+            floor.SetPlaceable(station, this);
+        }
+
+        public override bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2, bool returnOnValidityAssessment,
+            out List<Vector2Int> validPositions)
+        {
+            validPositions = new List<Vector2Int>();
+            bool hasFoundValidPos = false;
+            foreach (Vector2Int pos in Utils.IterateOverRect(corner1, corner2))
             {
-                if (floor.Placeable == null)
+                if (station.DoesGridPosHaveFloorButNoPlaceable(pos))
                 {
-                    this.gridPos = gridPos;
-                    floor.SetPlaceable(station, this);
+                    hasFoundValidPos = true;
+                    if (returnOnValidityAssessment) return true;
+                    validPositions.Add(pos);
                 }
             }
+            
+            return hasFoundValidPos;
         }
 
         public override void Delete(Station station)
         {
-            if (station.TryGetFloorAtGridPos(gridPos, out FloorTile floor))
-            {
-                floor.RemovePlaceable(station);
-            }
+            if (BlockDeletion) return;
+            floor.RemovePlaceable(station);
         }
 
-        public WallTile(PlaceableName placeableName, ConstructType type, Vector2Int gridPos, bool blockPlayerReplacement) : base(placeableName, type, gridPos, blockPlayerReplacement)
+        public WallTile(PlaceableName placeableName, ConstructType type, Vector2Int gridPos, bool blockDeletion = false)
+            : base(placeableName, type, gridPos, blockDeletion)
         {
         }
 
-        public WallTile(PlaceableName placeableName) : base(placeableName)
+        public WallTile(PlaceableName placeableName, bool blockDeletion = false) : base(placeableName, blockDeletion)
         {
         }
 
         public WallTile(TileConstruct construct) : base(construct)
         {
+            WallTile original = construct as WallTile;
+            if (original == null) Debug.LogError("Improper Tile Construct copy");
+            Health = original.Health;
+            floor = original.floor;
         }
     }
 }

@@ -1046,6 +1046,22 @@ namespace FishingGame.Utilities
             }
             return reqAns;
         }
+
+        public static IEnumerable<Vector2Int> IterateOverRect(Vector2Int corner1, Vector2Int corner2)
+        {
+            int minX = Mathf.Min(corner1.x, corner2.x);
+            int maxX = Mathf.Max(corner1.x, corner2.x);
+            int minY = Mathf.Min(corner1.y, corner2.y);
+            int maxY = Mathf.Max(corner1.y, corner2.y);
+
+            for (int x = minX; x <= maxX; x++)
+            {
+                for (int y = minY; y <= maxY; y++)
+                {
+                    yield return new Vector2Int(x, y);
+                }
+            }
+        }
     }
 
     public enum TextMod

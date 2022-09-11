@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using FishingGame.Utilities;
 using TMPro;
 using UnityEngine;
@@ -50,12 +51,13 @@ namespace _Project.Codebase
 
             TileConstruct newTileConstruct = TileConstruct.GetTileConstructFromName(placeableName);
 
-            bool isValidPlacement = toolType == ToolType.Single && (newTileConstruct != null &&
-                                    newTileConstruct.IsValidPlacementAtGridPos(Station.Singleton, mouseGridPos) || 
-                                    newTileConstruct == null);// ||
-                                    //toolType == ToolType.Rect &&
-                                    //Station.Singleton.IsRectViableToFill(_rectStartPos,
-                                    //    worldMousePos, newTileConstruct);
+            bool isValidPlacement = newTileConstruct == null || toolType == ToolType.Single && 
+                                                                     newTileConstruct.IsValidPlacementAtGridPos(
+                                                                         Station.Singleton, mouseGridPos) ||
+                                    toolType == ToolType.Rect &&
+                                    newTileConstruct.IsValidRectPlacement(Station.Singleton, 
+                                        Station.Singleton.WorldToGridPos2D(_rectStartPos),
+                                        mouseGridPos, true, out List<Vector2Int> pos);
             bool mouseOverUI = CustomUI.MouseOverUI;
 
             if (_drawingRect)
@@ -91,7 +93,6 @@ namespace _Project.Codebase
                     }
                 }
             }
-            /*
             else if (toolType == ToolType.Rect)
             {
                 if (GameControls.PlaceStructure.IsPressed && !mouseOverUI)
@@ -101,8 +102,18 @@ namespace _Project.Codebase
                 }
                 else if (GameControls.PlaceStructure.IsReleased)
                 {
-                    if (_drawingRect && !mouseOverUI)
-                        Station.Singleton.FillRectWithStructure(_rectStartPos, worldMousePos, newTileConstruct);
+                    if (_drawingRect)
+                    {
+                        Vector2Int start = Station.Singleton.WorldToGridPos2D(_rectStartPos);
+                        if (newTileConstruct != null)
+                            newTileConstruct.TryFillRect(Station.Singleton, start, mouseGridPos);
+                        else
+                        {
+                            Station.Singleton.RemoveAllOfTypeInRect(start, mouseGridPos, 
+                                _destroyFloors ? ConstructType.Floor : ConstructType.Wall);
+                        }
+                    }
+                    
                     _drawingRect = false;
                 }
                 else if (!GameControls.PlaceStructure.IsHeld)
@@ -112,8 +123,7 @@ namespace _Project.Codebase
                 {
                     Vector2 startGridPos = Station.Singleton.SnapPointToGrid(_rectStartPos);
                     Vector2 endGridPos = Station.Singleton.SnapPointToGrid(worldMousePos);
-                    
-                    
+
                     Vector2 displacement = endGridPos - startGridPos;
                     
                     _rectSize = new Vector2Int((int)Mathf.Abs(displacement.x) + 1, (int)Mathf.Abs(displacement.y) + 1);
@@ -123,8 +133,7 @@ namespace _Project.Codebase
 
                 }
             }
-            */
-
+            
             if (GameControls.FireDefenses.IsHeld && Time.time > _lastFireTime + .075f)
             {
                 _lastFireTime = Time.time;

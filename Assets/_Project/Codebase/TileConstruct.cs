@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace _Project.Codebase 
@@ -7,32 +8,56 @@ namespace _Project.Codebase
     public abstract class TileConstruct : IPlaceable
     {
         public PlaceableName PlaceableName { get; set; }
+        public bool BlockDeletion { get; set; }
         public ConstructType type;
         public Vector2Int gridPos;
-        public bool blockPlayerReplacement;
 
-        public TileConstruct(PlaceableName placeableName, ConstructType type, Vector2Int gridPos, bool blockPlayerReplacement)
+        public TileConstruct(PlaceableName placeableName, ConstructType type, Vector2Int gridPos, 
+            bool blockDeletion)
         {
             PlaceableName = placeableName;
+            BlockDeletion = blockDeletion;
             this.type = type;
             this.gridPos = gridPos;
-            this.blockPlayerReplacement = blockPlayerReplacement;
         }
 
-        public TileConstruct(PlaceableName placeableName, bool blockPlayerReplacement = false) : this(placeableName,
-            References.Singleton.GetType(placeableName), Vector2Int.zero, blockPlayerReplacement)
+        public TileConstruct(PlaceableName placeableName, bool blockDeletion = false) : this(placeableName,
+            References.Singleton.GetType(placeableName), Vector2Int.zero, blockDeletion)
         {
         }
 
-        public TileConstruct(TileConstruct construct) : this(construct.PlaceableName, construct.type, construct.gridPos,
-            construct.blockPlayerReplacement)
+        public TileConstruct(TileConstruct construct) : this(construct.PlaceableName, construct.type, construct.gridPos, 
+            construct.BlockDeletion)
         {
         }
 
         public abstract bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos);
 
         public abstract void TryPlace(Station station, in Vector2Int gridPos, bool ignoreValidity = false);
+        public abstract bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2, bool returnOnValidityAssessment, 
+            out List<Vector2Int> validPositions);
+
+        public virtual void TryFillRect(Station station, in Vector2Int corner1, in Vector2Int corner2, bool ignoreValidity = false)
+        {
+            if (IsValidRectPlacement(station, corner1, corner2, false, out List<Vector2Int> validPositions)
+                || ignoreValidity) 
+                station.FillPositionsWithConstruct(validPositions, this);
+        }
+
         public abstract void Delete(Station station);
+
+        public static TileConstruct MakeCopy(TileConstruct original)
+        {
+            switch (original.type)
+            {
+                case ConstructType.Wall:
+                    return new WallTile(original);
+                case ConstructType.Floor:
+                    return new FloorTile(original);
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
 
         public static TileConstruct GetTileConstructFromName(PlaceableName name)
         {

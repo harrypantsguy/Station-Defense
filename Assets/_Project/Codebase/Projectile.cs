@@ -25,10 +25,12 @@ namespace _Project.Codebase
                 return;
             }
 
-            //if (station.IsStructureAtWorldPos(transform.position))
+            /*
+            if (station.IsPlaceableAtGridPos(transform.position))
             {
                 TryHitStation(transform.position);
             }
+            */
             
             float distance = (SPEED * Time.fixedDeltaTime);
             Vector2 velocity = transform.right * distance;

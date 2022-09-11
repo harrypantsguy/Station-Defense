@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using FishingGame.Utilities;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -14,10 +15,8 @@ namespace _Project.Codebase
         private void Start()
         {
              TileConstruct powerCoreFloorTile = new FloorTile(PlaceableName.GratedFloor, true);
-             powerCoreFloorTile.TryPlace(this, new Vector2Int(5, 5), true);
-             
-            //FillRectWithStructure(new Vector2Int(-2, -2), new Vector2Int(1,1), 
-            //    powerCoreFloorTile, true);
+             powerCoreFloorTile.TryFillRect(this,
+                 new Vector2Int(-3, -3), new Vector2Int(2,2), true);
         }
         public Vector3Int WorldToGridPos(Vector2 pos) => _wallMap.WorldToCell(pos);
         public Vector2Int WorldToGridPos2D(Vector2 pos) => (Vector2Int)WorldToGridPos(pos);
@@ -35,16 +34,28 @@ namespace _Project.Codebase
             _floorMap.SetTile((Vector3Int)gridPos, References.Singleton.GetTile(tile.PlaceableName));
         }
 
+        /// <summary>
+        /// See's if floor is at grid pos, calls .Delete() on it, and then sets the tilemap/dictionary.
+        /// </summary>
+        /// <param name="gridPos"></param>
         public void TryRemoveFloorAtGridPos(Vector2Int gridPos)
         {
             if (TryGetFloorAtGridPos(gridPos, out FloorTile floor))
             {
-                _floorMap.SetTile((Vector3Int)gridPos, null);
                 floor.Delete(this);
-                _structureGrid.Remove(gridPos);
+                RemoveFloorFromDictAndTilemapAtGridPos(gridPos);
             }
         }
-
+        /// <summary>
+        /// Doesn't call .Delete() on floor tile. Likely to be called from a TileConstruct. 
+        /// </summary>
+        /// <param name="gridPos"></param>
+        public void RemoveFloorFromDictAndTilemapAtGridPos(Vector2Int gridPos)
+        {
+            _floorMap.SetTile((Vector3Int)gridPos, null);
+            _structureGrid.Remove(gridPos);
+        }
+        
         public bool TryGetPlaceableAtGridPos(Vector2Int gridPos, out IPlaceable placeable)
         {
             placeable = null;
@@ -59,6 +70,21 @@ namespace _Project.Codebase
 
             return false;
         }
+
+        public bool DoesGridPosHaveFloorButNoPlaceable(Vector2Int gridPos) =>
+            DoesGridPosHaveFloorButNoPlaceable(gridPos, out FloorTile floor);
+        public bool DoesGridPosHaveFloorButNoPlaceable(Vector2Int gridPos, out FloorTile floor)
+        {
+            if (TryGetFloorAtGridPos(gridPos, out floor))
+            {
+                return floor.Placeable == null;
+            }
+
+            return false;
+        }
+        
+        public bool IsPlaceableAtGridPos(Vector2Int gridPos) =>
+            TryGetPlaceableAtGridPos(gridPos, out IPlaceable placeable);
 
         public void SetWallMapTile(Vector3Int gridPos, TileBase tile)
         {
@@ -86,97 +112,32 @@ namespace _Project.Codebase
                    IsFloorAtGridPos(gridPos + new Vector2Int(0, -1));
         }
 
-        public bool IsRectViableToFill(Vector2 corner1, Vector2 corner2, TileConstruct tileConstruct) =>
-            IsRectViableToFill(WorldToGridPos2D(corner1), WorldToGridPos2D(corner2), tileConstruct);
-        public bool IsRectViableToFill(Vector2Int corner1, Vector2Int corner2, TileConstruct tileConstruct,
-            bool returnOnViabilityAssessment = true) => IsRectViableToFill(corner1, corner2, tileConstruct,
-            returnOnViabilityAssessment, out List<Vector2Int> viablePoints);
-        public bool IsRectViableToFill(Vector2Int corner1, Vector2Int corner2, TileConstruct tileConstruct, 
-            bool returnOnViabilityAssessment, out List<Vector2Int> viablePoints)
+        public void FillPositionsWithConstruct(List<Vector2Int> positions, TileConstruct construct)
         {
-            viablePoints = new List<Vector2Int>();
-            int minX = Mathf.Min(corner1.x, corner2.x);
-            int maxX = Mathf.Max(corner1.x, corner2.x);
-            int minY = Mathf.Min(corner1.y, corner2.y);
-            int maxY = Mathf.Max(corner1.y, corner2.y);
-
-            int extendedMinX = minX - 1;
-            int extendedMaxX = maxX + 1;
-            int extendedMinY = minY - 1;
-            int extendedMaxY = maxY + 1;
-
-            bool constructIsNull = tileConstruct == null;
-            bool hasFoundValidPos = false;
-            for (int x = extendedMinX; x <= extendedMaxX; x++)
+            foreach (Vector2Int pos in positions)
             {
-                for (int y = extendedMinY; y <= extendedMaxY; y++)
-                {
-                    Vector2Int pos = new Vector2Int(x, y);
-
-                    bool atSmallestX = pos.x == extendedMinX;
-                    bool atBiggestX = pos.x == extendedMaxX;
-                    bool atSmallestY = pos.y == extendedMinY;
-                    bool atBiggestY = pos.y == extendedMaxY;
-
-                    if (!constructIsNull && (atSmallestX || atBiggestX) && (atSmallestY || atBiggestY)) continue;
-                    
-                    bool isStructureAtGridPos = false;
-                    bool checkedGridPosForStructure = false;
-                    bool outsideRect = pos.x > maxX || pos.x < minX || pos.y < minY || pos.y > maxY;
-
-                    if (constructIsNull)
-                        hasFoundValidPos = true;
-
-                    if (!hasFoundValidPos)
-                    {
-                       // isStructureAtGridPos = IsConstructAtGridPos(pos);
-                        checkedGridPosForStructure = true;
-                        if (isStructureAtGridPos)
-                            hasFoundValidPos = true;
-                    }
-
-                    if (hasFoundValidPos && returnOnViabilityAssessment)
-                        return true;
-
-                    if (outsideRect) continue;
-                    
-                    //if (!constructIsNull && !checkedGridPosForStructure)
-                     //   isStructureAtGridPos = IsConstructAtGridPos(pos);
-                    
-                    if (constructIsNull || !isStructureAtGridPos)
-                        viablePoints.Add(pos);
-                }
+                TileConstruct newTile = TileConstruct.MakeCopy(construct);
+                newTile.TryPlace(this, pos, true);
             }
-
-            return hasFoundValidPos;
         }
-        public void FillRectWithStructure(Vector2 corner1, Vector2 corner2, TileConstruct tileConstruct) => 
-            FillRectWithStructure(WorldToGridPos2D(corner1), WorldToGridPos2D(corner2), tileConstruct);
-        public void FillRectWithStructure(Vector2Int corner1, Vector2Int corner2, TileConstruct tileConstruct, bool ignoreViability = false)
+
+        public void RemoveAllOfTypeInRect(in Vector2Int corner1, in Vector2Int corner2, ConstructType type)
         {
-            List<Vector2Int> positionsToSet = new List<Vector2Int>();
-            if (ignoreViability)
+            foreach (Vector2Int pos in Utils.IterateOverRect(corner1, corner2))
             {
-                for (int x = Mathf.Min(corner1.x, corner2.x); x <= Mathf.Max(corner1.x, corner2.x); x++)
+                if (type == ConstructType.Floor)
                 {
-                    for (int y = Mathf.Min(corner1.y, corner2.y); y <= Mathf.Max(corner1.y, corner2.y); y++)
-                    {
-                        Vector2Int pos = new Vector2Int(x, y);
-                        //if (!IsConstructAtGridPos(pos))
-                            positionsToSet.Add(pos);
-                    }
+                    if (TryGetFloorAtGridPos(pos, out FloorTile floor))
+                        floor.Delete(this);
                 }
-            }
-            
-            if (ignoreViability || IsRectViableToFill(corner1, corner2, tileConstruct, false, out positionsToSet))
-            {
-                foreach (Vector2Int pos in positionsToSet)
+                else
                 {
-                    tileConstruct.TryPlace(this, pos);
-                    //SetTileConstructAtPos(pos, tileConstruct);
+                    if (TryGetPlaceableAtGridPos(pos, out IPlaceable placeable))
+                        placeable.Delete(this);
                 }
             }
         }
+        
         public bool TrySetGridPosStructure(Vector2 position, TileConstruct tileConstruct) => 
             TrySetGridPosStructure(WorldToGridPos2D(position), tileConstruct);
 
