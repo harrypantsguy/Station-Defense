@@ -1,4 +1,4 @@
-﻿using FishingGame.Utilities;
+﻿using DanonsTools.Plugins.DanonsTools.Utilities;
 using UnityEngine;
 
 namespace _Project.Codebase

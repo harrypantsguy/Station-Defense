@@ -1,5 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
+using DanonsTools.Plugins.DanonsTools.Utilities;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
+using Debug = UnityEngine.Debug;
 
 namespace _Project.Codebase
 {
@@ -45,67 +49,77 @@ namespace _Project.Codebase
             station.SetFloorAtGridPos(gridPos, this);
         }
 
-        public override bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2, bool returnOnValidityAssessment,
+        public override bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2,
+            bool borderOnly, bool returnOnValidityAssessment,
             out List<Vector2Int> validPositions)
         {
             validPositions = new List<Vector2Int>();
-            int minX = Mathf.Min(corner1.x, corner2.x);
-            int maxX = Mathf.Max(corner1.x, corner2.x);
-            int minY = Mathf.Min(corner1.y, corner2.y);
-            int maxY = Mathf.Max(corner1.y, corner2.y);
-            
+            Utils.GetMinAndMax(corner1, corner2, out int minX, out int minY, out int maxX, out int maxY);
+
             int extendedMinX = minX - 1;
-            int extendedMaxX = maxX + 1;
             int extendedMinY = minY - 1;
+            int extendedMaxX = maxX + 1;
             int extendedMaxY = maxY + 1;
+
+            int shrunkenMinX = minX + 1, shrunkenMinY = minY + 1, shrunkenMaxX = maxX - 1, shrunkenMaxY = maxY - 1;
 
             bool rectIsDeterminedValid = false;
             bool hasFoundOccupiedPos = false;
             bool hasFoundUnoccupiedPosInsideRect = false;
-            for (int x = extendedMinX; x <= extendedMaxX; x++)
+            List<Vector2Int> positionsToCheck = Utils.GenerateRectList(extendedMinX, extendedMinY,
+                extendedMaxX, extendedMaxY, borderOnly);
+            positionsToCheck.AddRange(Utils.GenerateRectList(minX, minY, maxX, maxY, true));
+
+            bool checkingInsideRect = borderOnly && shrunkenMaxX >= shrunkenMinX && shrunkenMaxY >= shrunkenMinY;
+            
+            if (checkingInsideRect)
             {
-                for (int y = extendedMinY; y <= extendedMaxY; y++)
-                {
-                    Vector2Int pos = new Vector2Int(x, y);
-
-                    bool atSmallestX = pos.x == extendedMinX;
-                    bool atBiggestX = pos.x == extendedMaxX;
-                    bool atSmallestY = pos.y == extendedMinY;
-                    bool atBiggestY = pos.y == extendedMaxY;
-
-                    if ((atSmallestX || atBiggestX) && (atSmallestY || atBiggestY)) continue;
-                    
-                    bool isGridPosOccupied = false;
-                    bool checkedPosForValidity = false;
-                    bool outsideRect = atSmallestX || atBiggestX || atSmallestY || atBiggestY;
-                    
-                    if (!rectIsDeterminedValid)
-                    {
-                        isGridPosOccupied = station.IsFloorAtGridPos(pos);
-                        checkedPosForValidity = true;
-
-                        if (isGridPosOccupied)
-                            hasFoundOccupiedPos = true;
-                        else if (!outsideRect)
-                            hasFoundUnoccupiedPosInsideRect = true;
-                        
-                        if (hasFoundOccupiedPos && hasFoundUnoccupiedPosInsideRect)
-                        {
-                            rectIsDeterminedValid = true;
-                            if (returnOnValidityAssessment) return true;
-                        }
-                    }
-
-                    if (outsideRect) continue;
-                    
-                    if (!checkedPosForValidity)
-                        isGridPosOccupied = station.IsFloorAtGridPos(pos);
-                    
-                    if (!isGridPosOccupied)
-                        validPositions.Add(pos);
-                }
+                positionsToCheck.AddRange(Utils.GenerateRectList(shrunkenMinX, shrunkenMinY, 
+                    shrunkenMaxX, shrunkenMaxY, true));
             }
+            Debug.Log(checkingInsideRect);
+            
+            foreach (Vector2Int pos in positionsToCheck)
+            {
+                bool atSmallestX = pos.x == extendedMinX;
+                bool atBiggestX = pos.x == extendedMaxX;
+                bool atSmallestY = pos.y == extendedMinY;
+                bool atBiggestY = pos.y == extendedMaxY;
 
+                if ((atSmallestX || atBiggestX) && (atSmallestY || atBiggestY)) continue;
+
+                bool isGridPosOccupied = false;
+                bool checkedPosForValidity = false;
+                bool outsideTrueRect = atSmallestX || atSmallestY || atBiggestX || atBiggestY || 
+                                       checkingInsideRect && (pos.x >= shrunkenMinX && pos.x <= shrunkenMaxX) && 
+                                        pos.y <= shrunkenMaxY && pos.y >= shrunkenMinY;
+
+                if (!rectIsDeterminedValid)
+                {
+                    isGridPosOccupied = station.IsFloorAtGridPos(pos);
+                    checkedPosForValidity = true;
+
+                    if (isGridPosOccupied)
+                        hasFoundOccupiedPos = true;
+                    else if (!outsideTrueRect)
+                        hasFoundUnoccupiedPosInsideRect = true;
+
+                    if (hasFoundOccupiedPos && hasFoundUnoccupiedPosInsideRect)
+                    {
+                        rectIsDeterminedValid = true;
+                        if (returnOnValidityAssessment) return true;
+                    }
+                }
+
+                if (outsideTrueRect) continue;
+
+                if (!checkedPosForValidity)
+                    isGridPosOccupied = station.IsFloorAtGridPos(pos);
+
+                if (!isGridPosOccupied)
+                    validPositions.Add(pos);
+
+            }
             return rectIsDeterminedValid;
         }
 
@@ -126,8 +140,10 @@ namespace _Project.Codebase
         {
             Placeable = placeable;
             if (placeable is WallTile wall)
+            {
                 _wallTile = wall;
-            station.SetWallMapTile((Vector3Int)gridPos, References.Singleton.GetTile(placeable.PlaceableName));
+                station.SetWallMapTile((Vector3Int) gridPos, References.Singleton.GetTile(placeable.PlaceableName));
+            }
         }
 
         public void RemovePlaceable(Station station)

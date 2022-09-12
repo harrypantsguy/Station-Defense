@@ -730,6 +730,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7637828120221614409}
+  - component: {fileID: 5251860253441072458}
   - component: {fileID: -1263611791187846913}
   m_Layer: 0
   m_Name: Structure_PowerCore
@@ -754,6 +755,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5251860253441072458
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7637828120221614415}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20fbcebfd6be453a9409145079da889d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dimensions: {x: 4, y: 4}
+  pivot: {x: 2, y: 2}
 --- !u!61 &-1263611791187846913
 BoxCollider2D:
   m_ObjectHideFlags: 0

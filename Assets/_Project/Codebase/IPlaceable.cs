@@ -11,9 +11,9 @@ namespace _Project.Codebase
         public bool Built { get; }
         public bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos);
         public void TryPlace(Station station, in Vector2Int gridPos, bool ignoreValidity = false);
-        public bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2,
+        public bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2, bool borderOnly,
             bool returnOnValidityAssessment, out List<Vector2Int> validPositions);
-        public void TryFillRect(Station station, in Vector2Int corner1, in Vector2Int corner2, 
+        public void TryFillRect(Station station, in Vector2Int corner1, in Vector2Int corner2, bool borderOnly,
             bool ignoreValidity = false);
         public void Delete(Station station);
     }

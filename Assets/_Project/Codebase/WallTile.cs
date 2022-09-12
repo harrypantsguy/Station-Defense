@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using FishingGame.Utilities;
+using DanonsTools.Plugins.DanonsTools.Utilities;
 using UnityEngine;
 
 namespace _Project.Codebase
@@ -36,12 +36,12 @@ namespace _Project.Codebase
             floor.SetPlaceable(station, this);
         }
 
-        public override bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2, bool returnOnValidityAssessment,
-            out List<Vector2Int> validPositions)
+        public override bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2, bool borderOnly, 
+            bool returnOnValidityAssessment, out List<Vector2Int> validPositions)
         {
             validPositions = new List<Vector2Int>();
             bool hasFoundValidPos = false;
-            foreach (Vector2Int pos in Utils.IterateOverRect(corner1, corner2))
+            foreach (Vector2Int pos in Utils.IterateOverRect(corner1, corner2, borderOnly))
             {
                 if (station.DoesGridPosHaveFloorButNoPlaceable(pos))
                 {

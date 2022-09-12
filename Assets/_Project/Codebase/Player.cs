@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using FishingGame.Utilities;
+using DanonsTools.Plugins.DanonsTools.Utilities;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,10 +14,12 @@ namespace _Project.Codebase
         [SerializeField] private TMP_Text _yText;
         [SerializeField] private Image _structureSelectionImage;
         [SerializeField] private Toggle _destroyFloorsToggle;
+        [SerializeField] private Toggle _fillToggle;
         
         public PlaceableName placeableName;
         public ToolType toolType;
 
+        private bool _fillRect;
         private bool _destroyFloors;
         private bool _drawingRect;
         private Vector2 _rectStartPos;
@@ -37,14 +39,15 @@ namespace _Project.Codebase
 
         private void Update()
         {
-            _destroyFloors = _destroyFloorsToggle.isOn;
+            _fillRect = _fillToggle.isOn;
+            _destroyFloors = _destroyFloorsToggle.isOn;  
             Vector2 worldMousePos = Utils.WorldMousePos;
 
             Vector2Int mouseGridPos = Station.Singleton.WorldToGridPos2D(worldMousePos);
             
-            Debug.Log($"{mouseGridPos} " +
-                      (Station.Singleton.TryGetFloorAtGridPos(mouseGridPos, out FloorTile floorTile)
-                          ? floorTile.Built.ToString() : "Unbuilt"));
+            //Debug.Log($"{mouseGridPos} " +
+            //          (Station.Singleton.TryGetFloorAtGridPos(mouseGridPos, out FloorTile floorTile)
+            //              ? floorTile.Built.ToString() : "Unbuilt"));
 
             _placementImage.transform.position = Station.Singleton.SnapPointToGrid(worldMousePos);
             _placementImage.rectTransform.sizeDelta = Vector2.one;
@@ -59,7 +62,7 @@ namespace _Project.Codebase
                                     toolType == ToolType.Rect &&
                                     newTileConstruct.IsValidRectPlacement(Station.Singleton, 
                                         Station.Singleton.WorldToGridPos2D(_rectStartPos),
-                                        mouseGridPos, true, out List<Vector2Int> pos);
+                                        mouseGridPos, !_fillRect, true, out List<Vector2Int> pos);
             bool mouseOverUI = CustomUI.MouseOverUI;
 
             if (_drawingRect)
@@ -113,10 +116,10 @@ namespace _Project.Codebase
                     {
                         Vector2Int start = Station.Singleton.WorldToGridPos2D(_rectStartPos);
                         if (newTileConstruct != null)
-                            newTileConstruct.TryFillRect(Station.Singleton, start, mouseGridPos);
+                            newTileConstruct.TryFillRect(Station.Singleton, start, mouseGridPos, !_fillRect);
                         else
                         {
-                            Station.Singleton.RemoveAllOfTypeInRect(start, mouseGridPos, 
+                            Station.Singleton.RemoveAllOfTypeInRect(start, mouseGridPos, !_fillRect,
                                 _destroyFloors ? ConstructType.Floor : ConstructType.Wall);
                         }
                     }

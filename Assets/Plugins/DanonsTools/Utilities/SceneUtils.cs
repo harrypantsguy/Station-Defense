@@ -1,7 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
 
-namespace DanonsTools.Utilities
+namespace DanonsTools.Plugins.DanonsTools.Utilities
 {
     public static class SceneUtils
     {

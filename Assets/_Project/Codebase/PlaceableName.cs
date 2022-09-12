@@ -8,6 +8,7 @@ namespace _Project.Codebase
         None,
         SteelWall,
         GratedFloor,
-        IndustrialFloor
+        IndustrialFloor,
+        PowerCore,
     }
 }

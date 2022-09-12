@@ -45,12 +45,13 @@ namespace _Project.Codebase
         public abstract bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos);
 
         public abstract void TryPlace(Station station, in Vector2Int gridPos, bool ignoreValidity = false);
-        public abstract bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2, bool returnOnValidityAssessment, 
-            out List<Vector2Int> validPositions);
+        public abstract bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2, 
+            bool borderOnly, bool returnOnValidityAssessment, out List<Vector2Int> validPositions);
 
-        public virtual void TryFillRect(Station station, in Vector2Int corner1, in Vector2Int corner2, bool ignoreValidity = false)
+        public virtual void TryFillRect(Station station, in Vector2Int corner1, in Vector2Int corner2, bool borderOnly,
+            bool ignoreValidity = false)
         {
-            if (IsValidRectPlacement(station, corner1, corner2, false, out List<Vector2Int> validPositions)
+            if (IsValidRectPlacement(station, corner1, corner2, borderOnly, false, out List<Vector2Int> validPositions)
                 || ignoreValidity) 
                 station.FillPositionsWithConstruct(validPositions, this);
         }

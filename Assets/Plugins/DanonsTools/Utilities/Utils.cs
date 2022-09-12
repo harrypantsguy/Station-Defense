@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace FishingGame.Utilities
+namespace DanonsTools.Plugins.DanonsTools.Utilities
 {
     public static class Utils
     {
@@ -1047,20 +1047,50 @@ namespace FishingGame.Utilities
             return reqAns;
         }
 
-        public static IEnumerable<Vector2Int> IterateOverRect(Vector2Int corner1, Vector2Int corner2)
+        public static void GetMinAndMax(Vector2Int corner1, Vector2Int corner2, 
+            out int minX, out int minY, out int maxX, out int maxY)
         {
-            int minX = Mathf.Min(corner1.x, corner2.x);
-            int maxX = Mathf.Max(corner1.x, corner2.x);
-            int minY = Mathf.Min(corner1.y, corner2.y);
-            int maxY = Mathf.Max(corner1.y, corner2.y);
+            minX = Mathf.Min(corner1.x, corner2.x);
+            maxX = Mathf.Max(corner1.x, corner2.x);
+            minY = Mathf.Min(corner1.y, corner2.y);
+            maxY = Mathf.Max(corner1.y, corner2.y);
+        }
+        public static IEnumerable<Vector2Int> IterateOverRect(Vector2Int corner1, Vector2Int corner2, bool borderOnly = false)
+        {
+            GetMinAndMax(corner1, corner2, out int minX, out int minY, out int maxX, out int maxY);
 
-            for (int x = minX; x <= maxX; x++)
+            return IterateOverRect(minX, minY, maxX, maxY, borderOnly);
+        }
+
+        public static IEnumerable<Vector2Int> IterateOverRect(int minX, int minY, int maxX, int maxY,
+            bool borderOnly = false)
+        {
+            foreach (Vector2Int pos in GenerateRectList(minX, minY, maxX, maxY, borderOnly))
             {
-                for (int y = minY; y <= maxY; y++)
+                yield return pos;
+            }
+        }
+
+        public static List<Vector2Int> GenerateRectList(int minX, int minY, int maxX, int maxY,
+            bool borderOnly = false)
+        {
+            List<Vector2Int> points = new List<Vector2Int>();
+            int rectWidth = maxX - minX;
+            
+            for (int y = minY; y <= maxY; y++)
+            {
+                int xStepSize;
+                for (int x = minX; x <= maxX; x += xStepSize)
                 {
-                    yield return new Vector2Int(x, y);
+                    if (borderOnly && y > minY && y < maxY)
+                        xStepSize = Mathf.Max(rectWidth, 1);
+                    else
+                        xStepSize = 1;
+                    points.Add(new Vector2Int(x, y));
                 }
             }
+
+            return points;
         }
     }
 

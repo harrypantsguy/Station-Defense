@@ -31,14 +31,15 @@ namespace _Project.Codebase
         {
         }
 
-        public bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2,
+        public bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2, bool borderOnly,
             bool returnOnValidityAssessment, out List<Vector2Int> validPositions)
         {
             validPositions = new List<Vector2Int>();
             return false;
         }
 
-        public void TryFillRect(Station station, in Vector2Int corner1, in Vector2Int corner2, bool ignoreValidity = false)
+        public void TryFillRect(Station station, in Vector2Int corner1, in Vector2Int corner2, bool borderOnly,
+            bool ignoreValidity = false)
         {
         }
 

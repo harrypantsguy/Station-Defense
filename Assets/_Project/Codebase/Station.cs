@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using FishingGame.Utilities;
+﻿using System.Collections.Generic;
+using DanonsTools.Plugins.DanonsTools.Utilities;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -10,14 +9,18 @@ namespace _Project.Codebase
     {
         [SerializeField] private Tilemap _wallMap;
         [SerializeField] private Tilemap _floorMap;
+        [SerializeField] private Structure _powerCore;
         
         private Dictionary<Vector2Int, FloorTile> _floorGrid = new Dictionary<Vector2Int, FloorTile>();
 
         private void Start()
         {
-             TileConstruct powerCoreFloorTile = new FloorTile(PlaceableName.GratedFloor, true);
-             powerCoreFloorTile.TryFillRect(this,
-                 new Vector2Int(-3, -3), new Vector2Int(2,2), true);
+            FloorTile powerCoreFloorTile = new FloorTile(PlaceableName.GratedFloor, true);
+            powerCoreFloorTile.TryFillRect(this,
+                 new Vector2Int(-3, -3), new Vector2Int(2,2), true, true);
+            powerCoreFloorTile.SetPlaceable(this, _powerCore);
+            powerCoreFloorTile.TryFillRect(this,
+                new Vector2Int(-2, -2), new Vector2Int(1,1), false, true);
         }
 
         private void Update()
@@ -45,7 +48,7 @@ namespace _Project.Codebase
         }
 
         /// <summary>
-        /// See's if floor is at grid pos, calls .Delete() on it, and then sets the tilemap/dictionary.
+        /// See's if floor is at grid pos, calls .Delete() on it.
         /// </summary>
         /// <param name="gridPos"></param>
         public void TryRemoveFloorAtGridPos(Vector2Int gridPos)
@@ -53,7 +56,6 @@ namespace _Project.Codebase
             if (TryGetFloorAtGridPos(gridPos, out FloorTile floor))
             {
                 floor.Delete(this);
-                RemoveFloorFromDictAndTilemapAtGridPos(gridPos);
             }
         }
         /// <summary>
@@ -131,9 +133,9 @@ namespace _Project.Codebase
             }
         }
 
-        public void RemoveAllOfTypeInRect(in Vector2Int corner1, in Vector2Int corner2, ConstructType type)
+        public void RemoveAllOfTypeInRect(in Vector2Int corner1, in Vector2Int corner2, bool borderOnly, ConstructType type)
         {
-            foreach (Vector2Int pos in Utils.IterateOverRect(corner1, corner2))
+            foreach (Vector2Int pos in Utils.IterateOverRect(corner1, corner2, borderOnly))
             {
                 if (type == ConstructType.Floor)
                 {
