@@ -9,6 +9,8 @@ namespace _Project.Codebase
     {
         public PlaceableName PlaceableName { get; set; }
         public bool BlockDeletion { get; set; }
+        public float BuildProgress { get; set; }
+        public bool Built => BuildProgress >= 1f;
         public ConstructType type;
         public Vector2Int gridPos;
 
@@ -31,6 +33,15 @@ namespace _Project.Codebase
         {
         }
 
+        public virtual void Update()
+        {
+            if (BuildProgress < 1f)
+            {
+                BuildProgress += Time.deltaTime;
+                BuildProgress = Mathf.Clamp01(BuildProgress);
+            }
+        }
+        
         public abstract bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos);
 
         public abstract void TryPlace(Station station, in Vector2Int gridPos, bool ignoreValidity = false);

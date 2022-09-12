@@ -6,7 +6,7 @@ namespace _Project.Codebase
 {
     public class WallTile : TileConstruct, IDestroyable
     {
-        public float Health { get; set; }
+        public float Health { get; set; } = 100f;
         public FloorTile floor;
         public void TakeDamage()
         {
@@ -14,6 +14,12 @@ namespace _Project.Codebase
         public void Die()
         {
         }
+
+        public override void Update()
+        {
+            base.Update();
+        }
+
         public override bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos) => 
             station.DoesGridPosHaveFloorButNoPlaceable(gridPos);
 

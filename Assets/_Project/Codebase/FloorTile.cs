@@ -6,6 +6,7 @@ namespace _Project.Codebase
     public class FloorTile : TileConstruct
     {
         public IPlaceable Placeable { get; private set; }
+        private WallTile _wallTile;
         
         public FloorTile(PlaceableName placeableName, Vector2Int gridPos, bool blockDeletion = false) :
             base(placeableName, ConstructType.Floor, gridPos, blockDeletion)
@@ -23,6 +24,12 @@ namespace _Project.Codebase
             if (original == null) Debug.LogError("Improper Tile Construct copy");
             Placeable = original.Placeable;
             // you need to place a copy of the placeable on the station!
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            _wallTile?.Update();
         }
 
         public override bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos)
@@ -118,12 +125,15 @@ namespace _Project.Codebase
         public void SetPlaceable(Station station, IPlaceable placeable)
         {
             Placeable = placeable;
+            if (placeable is WallTile wall)
+                _wallTile = wall;
             station.SetWallMapTile((Vector3Int)gridPos, References.Singleton.GetTile(placeable.PlaceableName));
         }
 
         public void RemovePlaceable(Station station)
         {
             Placeable = null;
+            _wallTile = null;
             station.SetWallMapTile((Vector3Int) gridPos, null);
         }
     }

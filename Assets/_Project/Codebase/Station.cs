@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using FishingGame.Utilities;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -10,7 +11,7 @@ namespace _Project.Codebase
         [SerializeField] private Tilemap _wallMap;
         [SerializeField] private Tilemap _floorMap;
         
-        private Dictionary<Vector2Int, FloorTile> _structureGrid = new Dictionary<Vector2Int, FloorTile>();
+        private Dictionary<Vector2Int, FloorTile> _floorGrid = new Dictionary<Vector2Int, FloorTile>();
 
         private void Start()
         {
@@ -18,19 +19,28 @@ namespace _Project.Codebase
              powerCoreFloorTile.TryFillRect(this,
                  new Vector2Int(-3, -3), new Vector2Int(2,2), true);
         }
+
+        private void Update()
+        {
+            foreach (FloorTile tile in _floorGrid.Values)
+            {
+                tile.Update();
+            }
+        }
+
         public Vector3Int WorldToGridPos(Vector2 pos) => _wallMap.WorldToCell(pos);
         public Vector2Int WorldToGridPos2D(Vector2 pos) => (Vector2Int)WorldToGridPos(pos);
         public Vector2 GridToWorldPos(Vector2Int gridPos) => gridPos + new Vector2(.5f, .5f);
         public Vector2 SnapPointToGrid(Vector2 pos) => GridToWorldPos(WorldToGridPos2D(pos));
 
         public bool TryGetFloorAtGridPos(Vector2Int gridPos, out FloorTile floor) =>
-            _structureGrid.TryGetValue(gridPos, out floor);
+            _floorGrid.TryGetValue(gridPos, out floor);
 
         public bool IsFloorAtGridPos(Vector2Int gridPos) => TryGetFloorAtGridPos(gridPos, out FloorTile floor);
         
         public void SetFloorAtGridPos(Vector2Int gridPos, FloorTile tile)
         {
-            _structureGrid[gridPos] = tile;
+            _floorGrid[gridPos] = tile;
             _floorMap.SetTile((Vector3Int)gridPos, References.Singleton.GetTile(tile.PlaceableName));
         }
 
@@ -53,7 +63,7 @@ namespace _Project.Codebase
         public void RemoveFloorFromDictAndTilemapAtGridPos(Vector2Int gridPos)
         {
             _floorMap.SetTile((Vector3Int)gridPos, null);
-            _structureGrid.Remove(gridPos);
+            _floorGrid.Remove(gridPos);
         }
         
         public bool TryGetPlaceableAtGridPos(Vector2Int gridPos, out IPlaceable placeable)

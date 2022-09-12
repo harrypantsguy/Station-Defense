@@ -7,6 +7,8 @@ namespace _Project.Codebase
     {
         public PlaceableName PlaceableName { get; set; }
         public bool BlockDeletion { get; set; }
+        public float BuildProgress { get; set; }
+        public bool Built { get; set; }
         public Vector2Int dimensions;
         public Vector2 pivot;
         public float Health { get; set; } = 100f;

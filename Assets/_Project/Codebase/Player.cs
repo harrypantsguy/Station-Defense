@@ -42,7 +42,9 @@ namespace _Project.Codebase
 
             Vector2Int mouseGridPos = Station.Singleton.WorldToGridPos2D(worldMousePos);
             
-           // Debug.Log($"{mouseGridPos}");
+            Debug.Log($"{mouseGridPos} " +
+                      (Station.Singleton.TryGetFloorAtGridPos(mouseGridPos, out FloorTile floorTile)
+                          ? floorTile.Built.ToString() : "Unbuilt"));
 
             _placementImage.transform.position = Station.Singleton.SnapPointToGrid(worldMousePos);
             _placementImage.rectTransform.sizeDelta = Vector2.one;
@@ -95,6 +97,11 @@ namespace _Project.Codebase
             }
             else if (toolType == ToolType.Rect)
             {
+                if (GameControls.CancelSelection.IsPressed)
+                {
+                    _drawingRect = false;
+                }
+                
                 if (GameControls.PlaceStructure.IsPressed && !mouseOverUI)
                 {
                     _drawingRect = true;
