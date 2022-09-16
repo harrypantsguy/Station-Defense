@@ -10,5 +10,10 @@ namespace _Project.Codebase
         GratedFloor,
         IndustrialFloor,
         PowerCore,
+        Battery,
+        Generator,
+        L,
+        Two,
+        HeavyCannon
     }
 }

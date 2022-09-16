@@ -25,13 +25,13 @@ namespace _Project.Codebase
 
         private void Update()
         {
-            if (Player.Singleton.placeableName == placeableName && _button.colors.normalColor != selectedColor)
+            if (Player.Singleton.PlaceableName == placeableName && _button.colors.normalColor != selectedColor)
             {
                 ColorBlock buttonColors = _button.colors;
                 buttonColors.normalColor = selectedColor;
                 _button.colors = buttonColors;
             }
-            else if (Player.Singleton.placeableName != placeableName && _button.colors.normalColor != unselectedColor)
+            else if (Player.Singleton.PlaceableName != placeableName && _button.colors.normalColor != unselectedColor)
             {
                 ColorBlock buttonColors = _button.colors;
                 buttonColors.normalColor = unselectedColor;

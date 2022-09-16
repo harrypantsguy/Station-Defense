@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59da05d7303949dc9136d61ae4546764, type: 3}
   m_Name: Construct Tile Data
   m_EditorClassIdentifier: 
-  structureData:
+  tileConstructData:
   - placeableName: 0
     type: 0
     sprite: {fileID: 21300000, guid: 38248e5430b45fe4daaef7ad233752b5, type: 3}
@@ -29,3 +29,19 @@ MonoBehaviour:
     type: 1
     sprite: {fileID: 21300000, guid: 823589970fa95834380f755132f94d53, type: 3}
     tile: {fileID: 11400000, guid: 9f1376d4960bf024fa4c977ccb311e88, type: 2}
+  structureData:
+  - placeableName: 5
+    structurePrefab: {fileID: 2215002540558861468, guid: 53e9ccc4f6e941c4d94cfead7c071525, type: 3}
+    sprite: {fileID: 21300000, guid: 08a16193f8dd39b44b92b19de5714e4b, type: 3}
+  - placeableName: 6
+    structurePrefab: {fileID: 2215002540558861468, guid: 126c7091736effc4b864288a9aacad0d, type: 3}
+    sprite: {fileID: 21300000, guid: 08a16193f8dd39b44b92b19de5714e4b, type: 3}
+  - placeableName: 7
+    structurePrefab: {fileID: 2215002540558861468, guid: f9e44372d96a0d64eaa48c475c2ce3cb, type: 3}
+    sprite: {fileID: 21300000, guid: 58cc71928eaebb441b2e2bcb82423d52, type: 3}
+  - placeableName: 8
+    structurePrefab: {fileID: 2215002540558861468, guid: c851ca1f72143ef4bb4e37acf83d86f9, type: 3}
+    sprite: {fileID: 21300000, guid: 9192690ed3d35154abdd5b0aabe00766, type: 3}
+  - placeableName: 9
+    structurePrefab: {fileID: 2215002540558861468, guid: 43a3204df41113843afa2245c169ae3a, type: 3}
+    sprite: {fileID: 21300000, guid: a7278d6f07ceba6408f4d93f7dc6c9d7, type: 3}

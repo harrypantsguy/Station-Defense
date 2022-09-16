@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using DanonsTools.Plugins.DanonsTools.Utilities;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Debug = UnityEngine.Debug;
 
 namespace _Project.Codebase
 {
@@ -15,10 +18,13 @@ namespace _Project.Codebase
         [SerializeField] private Image _structureSelectionImage;
         [SerializeField] private Toggle _destroyFloorsToggle;
         [SerializeField] private Toggle _fillToggle;
-        
-        public PlaceableName placeableName;
-        public ToolType toolType;
 
+        public PlaceableName PlaceableName { get; private set; }
+        public ToolType ToolType { get; private set; }
+
+        private PlaceableType _placeableType;
+        private Structure _newPlaceableAsStructure;
+        private Direction _placementDir;
         private bool _fillRect;
         private bool _destroyFloors;
         private bool _drawingRect;
@@ -27,40 +33,85 @@ namespace _Project.Codebase
         
         private float _lastFireTime;
         private Camera _cam;
+        private IPlaceable _newPlaceable;
 
         private void Start()
         {
             _lastFireTime = Time.time;
             _cam = CameraController.Singleton.camera;
-       }
 
-        public void SetStructure(PlaceableName placeableName) => this.placeableName = placeableName;
+            GenerateNewPlaceable();
+        }
+
+        public void SetStructure(PlaceableName placeableName)
+        {
+            PlaceableName = placeableName;
+            GenerateNewPlaceable();
+        }
+
+        public void SetToolType(ToolType tool) => ToolType = tool;
         public void SetDestroyFloorsState(bool state) => _destroyFloors = state;
+
+        private void GenerateNewPlaceable()
+        {
+            if (_newPlaceable != null && _newPlaceable is Structure structure)
+            {
+                Destroy(structure.gameObject);
+            }
+            _newPlaceable = IPlaceable.CreatePlaceableFromName(PlaceableName);
+            
+            _placeableType = References.Singleton.GetType(PlaceableName);
+            
+            if (_placeableType == PlaceableType.Structure)
+                _newPlaceableAsStructure = _newPlaceable as Structure;
+        }
 
         private void Update()
         {
+            if (GameControls.RotateStructureLeft.IsPressed)
+                _placementDir = _placementDir.Rotate(-1);
+            if (GameControls.RotateStructureRight.IsPressed)
+                _placementDir = _placementDir.Rotate(1);
+
             _fillRect = _fillToggle.isOn;
             _destroyFloors = _destroyFloorsToggle.isOn;  
             Vector2 worldMousePos = Utils.WorldMousePos;
 
             Vector2Int mouseGridPos = Station.Singleton.WorldToGridPos2D(worldMousePos);
             
+            _placementImage.rectTransform.sizeDelta = Vector2.one;
+            _placementImage.transform.position = Station.Singleton.GridToWorldPos(mouseGridPos);
+            
+            if (_placeableType == PlaceableType.Structure)
+            {
+                _newPlaceableAsStructure.Direction = _placementDir;
+                if (_newPlaceableAsStructure.xEven && _newPlaceableAsStructure.yEven)
+                {
+                    Vector2 modPos = new Vector2(worldMousePos.x % 1f, worldMousePos.y % 1f);
+                    int xOffset = (worldMousePos.x < 0f ? 1f - modPos.x.Abs() : modPos.x) > .5f ? 1 : 0;
+                    int yOffset = (worldMousePos.y < 0f ? 1f - modPos.y.Abs() : modPos.y) > .5f ? 1 : 0;
+
+                    _placementImage.transform.position = _newPlaceableAsStructure.transform.position;
+                    mouseGridPos += new Vector2Int(xOffset, yOffset);
+                }
+
+                _placementImage.rectTransform.sizeDelta = Vector2.zero; //_newPlaceableAsStructure.Dimensions;
+
+                //Debug.Log($"sizeDelta: {_placementImage.rectTransform.sizeDelta}");
+            }
+
             //Debug.Log($"{mouseGridPos} " +
             //          (Station.Singleton.TryGetFloorAtGridPos(mouseGridPos, out FloorTile floorTile)
             //              ? floorTile.Built.ToString() : "Unbuilt"));
 
-            _placementImage.transform.position = Station.Singleton.SnapPointToGrid(worldMousePos);
-            _placementImage.rectTransform.sizeDelta = Vector2.one;
-
-            _structureSelectionImage.sprite = References.Singleton.GetSprite(placeableName);
-
-            TileConstruct newTileConstruct = TileConstruct.GetTileConstructFromName(placeableName);
-
-            bool isValidPlacement = newTileConstruct == null || toolType == ToolType.Single && 
-                                                                     newTileConstruct.IsValidPlacementAtGridPos(
-                                                                         Station.Singleton, mouseGridPos) ||
-                                    toolType == ToolType.Rect &&
-                                    newTileConstruct.IsValidRectPlacement(Station.Singleton, 
+            _structureSelectionImage.sprite = References.Singleton.GetSprite(PlaceableName);
+            _structureSelectionImage.preserveAspect = true;
+            
+            bool isValidPlacement = _newPlaceable == null || ToolType == ToolType.Single && 
+                                    _newPlaceable.IsValidPlacementAtGridPos(
+                                        Station.Singleton, mouseGridPos) ||
+                                    ToolType == ToolType.Rect &&
+                                    _newPlaceable.IsValidRectPlacement(Station.Singleton, 
                                         Station.Singleton.WorldToGridPos2D(_rectStartPos),
                                         mouseGridPos, !_fillRect, true, out List<Vector2Int> pos);
             bool mouseOverUI = CustomUI.MouseOverUI;
@@ -80,13 +131,19 @@ namespace _Project.Codebase
 
             _placementImage.color = isValidPlacement ? Color.white : Color.red;
             _placementImage.enabled = _drawingRect || !mouseOverUI;
-            
-            if (toolType == ToolType.Single && !mouseOverUI && isValidPlacement)
+            if (_placeableType == PlaceableType.Structure)
+                _newPlaceableAsStructure.gameObject.SetActive(isValidPlacement);
+
+            if (ToolType == ToolType.Single && !mouseOverUI && isValidPlacement)
             {
                 if (GameControls.PlaceStructure.IsHeld)
                 {
-                    if (newTileConstruct != null) 
-                        newTileConstruct.TryPlace(Station.Singleton, Station.Singleton.WorldToGridPos2D(worldMousePos));
+                    if (_newPlaceable != null) 
+                    {
+                        _newPlaceable.TryPlace(Station.Singleton, mouseGridPos);
+                        _newPlaceable = null;
+                        GenerateNewPlaceable();
+                    }
                     else
                     {
                         if (_destroyFloors)
@@ -97,8 +154,12 @@ namespace _Project.Codebase
                         }
                     }
                 }
+                else if (_placeableType == PlaceableType.Structure)
+                {
+                    _newPlaceableAsStructure.SetGridPosition(Station.Singleton, mouseGridPos);
+                }
             }
-            else if (toolType == ToolType.Rect)
+            else if (ToolType == ToolType.Rect)
             {
                 if (GameControls.CancelSelection.IsPressed)
                 {
@@ -115,12 +176,15 @@ namespace _Project.Codebase
                     if (_drawingRect)
                     {
                         Vector2Int start = Station.Singleton.WorldToGridPos2D(_rectStartPos);
-                        if (newTileConstruct != null)
-                            newTileConstruct.TryFillRect(Station.Singleton, start, mouseGridPos, !_fillRect);
+                        if (_newPlaceable != null)
+                        {
+                            _newPlaceable.TryFillRect(Station.Singleton, start, mouseGridPos, !_fillRect);
+                            GenerateNewPlaceable();
+                        }
                         else
                         {
                             Station.Singleton.RemoveAllOfTypeInRect(start, mouseGridPos, !_fillRect,
-                                _destroyFloors ? ConstructType.Floor : ConstructType.Wall);
+                                _destroyFloors ? PlaceableType.Floor : PlaceableType.Wall);
                         }
                     }
                     
@@ -144,6 +208,7 @@ namespace _Project.Codebase
                 }
             }
             
+            /*
             if (GameControls.FireDefenses.IsHeld && Time.time > _lastFireTime + .075f)
             {
                 _lastFireTime = Time.time;
@@ -152,6 +217,7 @@ namespace _Project.Codebase
                 projectile.transform.position = Utils.WorldMousePos;
                 projectile.transform.right = -projectile.transform.position;
             }
+            */
         }
     }
 }

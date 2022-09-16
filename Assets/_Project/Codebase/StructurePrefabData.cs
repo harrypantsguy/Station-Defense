@@ -1,15 +1,13 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 namespace _Project.Codebase
 {
     [Serializable]
-    public struct TileConstructPrefabData
+    public struct StructurePrefabData
     {
         public PlaceableName placeableName;
-        public PlaceableType type;
+        public GameObject structurePrefab;
         public Sprite sprite;
-        public Tile tile;
     }
 }

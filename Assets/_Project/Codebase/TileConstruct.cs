@@ -8,18 +8,18 @@ namespace _Project.Codebase
     public abstract class TileConstruct : IPlaceable
     {
         public PlaceableName PlaceableName { get; set; }
+        public PlaceableType Type { get; set; }
         public bool BlockDeletion { get; set; }
         public float BuildProgress { get; set; }
         public bool Built => BuildProgress >= 1f;
-        public ConstructType type;
         public Vector2Int gridPos;
 
-        public TileConstruct(PlaceableName placeableName, ConstructType type, Vector2Int gridPos, 
+        public TileConstruct(PlaceableName placeableName, PlaceableType type, Vector2Int gridPos, 
             bool blockDeletion)
         {
             PlaceableName = placeableName;
             BlockDeletion = blockDeletion;
-            this.type = type;
+            Type = type;
             this.gridPos = gridPos;
         }
 
@@ -28,7 +28,7 @@ namespace _Project.Codebase
         {
         }
 
-        public TileConstruct(TileConstruct construct) : this(construct.PlaceableName, construct.type, construct.gridPos, 
+        public TileConstruct(TileConstruct construct) : this(construct.PlaceableName, construct.Type, construct.gridPos, 
             construct.BlockDeletion)
         {
         }
@@ -57,38 +57,5 @@ namespace _Project.Codebase
         }
 
         public abstract void Delete(Station station);
-
-        public static TileConstruct MakeCopy(TileConstruct original)
-        {
-            switch (original.type)
-            {
-                case ConstructType.Wall:
-                    return new WallTile(original);
-                case ConstructType.Floor:
-                    return new FloorTile(original);
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        public static TileConstruct GetTileConstructFromName(PlaceableName name)
-        {
-            switch (name)
-            {
-                case PlaceableName.None:
-                    return null;
-                default:
-                    switch (References.Singleton.GetType(name))
-                    {
-                        case ConstructType.Wall:
-                            return new WallTile(name);
-                        case ConstructType.Floor:
-                            return new FloorTile(name);
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-            }
-        }
-
     }
 }

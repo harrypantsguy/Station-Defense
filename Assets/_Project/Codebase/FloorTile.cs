@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using DanonsTools.Plugins.DanonsTools.Utilities;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 using Debug = UnityEngine.Debug;
 
 namespace _Project.Codebase
@@ -13,7 +11,7 @@ namespace _Project.Codebase
         private WallTile _wallTile;
         
         public FloorTile(PlaceableName placeableName, Vector2Int gridPos, bool blockDeletion = false) :
-            base(placeableName, ConstructType.Floor, gridPos, blockDeletion)
+            base(placeableName, PlaceableType.Floor, gridPos, blockDeletion)
         {
         }
 
@@ -22,9 +20,9 @@ namespace _Project.Codebase
         {
         }
 
-        public FloorTile(TileConstruct construct) : base(construct)
+        public FloorTile(FloorTile construct) : base(construct)
         {
-            FloorTile original = construct as FloorTile;
+            FloorTile original = construct;
             if (original == null) Debug.LogError("Improper Tile Construct copy");
             Placeable = original.Placeable;
             // you need to place a copy of the placeable on the station!
@@ -77,7 +75,6 @@ namespace _Project.Codebase
                 positionsToCheck.AddRange(Utils.GenerateRectList(shrunkenMinX, shrunkenMinY, 
                     shrunkenMaxX, shrunkenMaxY, true));
             }
-            Debug.Log(checkingInsideRect);
             
             foreach (Vector2Int pos in positionsToCheck)
             {

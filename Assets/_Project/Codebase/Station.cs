@@ -15,6 +15,7 @@ namespace _Project.Codebase
 
         private void Start()
         {
+            _powerCore.BlockDeletion = true;
             FloorTile powerCoreFloorTile = new FloorTile(PlaceableName.GratedFloor, true);
             powerCoreFloorTile.TryFillRect(this,
                  new Vector2Int(-3, -3), new Vector2Int(2,2), true, true);
@@ -37,7 +38,7 @@ namespace _Project.Codebase
         public Vector2 SnapPointToGrid(Vector2 pos) => GridToWorldPos(WorldToGridPos2D(pos));
 
         public bool TryGetFloorAtGridPos(Vector2Int gridPos, out FloorTile floor) =>
-            _floorGrid.TryGetValue(gridPos, out floor);
+            _floorGrid.TryGetValue(gridPos, out floor); 
 
         public bool IsFloorAtGridPos(Vector2Int gridPos) => TryGetFloorAtGridPos(gridPos, out FloorTile floor);
         
@@ -46,7 +47,7 @@ namespace _Project.Codebase
             _floorGrid[gridPos] = tile;
             _floorMap.SetTile((Vector3Int)gridPos, References.Singleton.GetTile(tile.PlaceableName));
         }
-
+        
         /// <summary>
         /// See's if floor is at grid pos, calls .Delete() on it.
         /// </summary>
@@ -128,16 +129,16 @@ namespace _Project.Codebase
         {
             foreach (Vector2Int pos in positions)
             {
-                TileConstruct newTile = TileConstruct.MakeCopy(construct);
+                IPlaceable newTile = IPlaceable.MakeCopy(construct);
                 newTile.TryPlace(this, pos, true);
             }
         }
 
-        public void RemoveAllOfTypeInRect(in Vector2Int corner1, in Vector2Int corner2, bool borderOnly, ConstructType type)
+        public void RemoveAllOfTypeInRect(in Vector2Int corner1, in Vector2Int corner2, bool borderOnly, PlaceableType type)
         {
             foreach (Vector2Int pos in Utils.IterateOverRect(corner1, corner2, borderOnly))
             {
-                if (type == ConstructType.Floor)
+                if (type == PlaceableType.Floor)
                 {
                     if (TryGetFloorAtGridPos(pos, out FloorTile floor))
                         floor.Delete(this);
@@ -148,20 +149,6 @@ namespace _Project.Codebase
                         placeable.Delete(this);
                 }
             }
-        }
-        
-        public bool TrySetGridPosStructure(Vector2 position, TileConstruct tileConstruct) => 
-            TrySetGridPosStructure(WorldToGridPos2D(position), tileConstruct);
-
-        public bool TrySetGridPosStructure(Vector2Int gridPos, TileConstruct tileConstruct)
-        {
-            //if (tileConstruct == null || IsValidPlacementAtGridPos(gridPos, tileConstruct))
-            {
-               // SetTileConstructAtPos(gridPos, tileConstruct);
-                return true;
-            }
-
-            return false;
         }
 
         public bool TakeDamage(Vector2 location, int tileSplash)

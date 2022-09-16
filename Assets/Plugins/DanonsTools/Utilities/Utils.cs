@@ -895,12 +895,15 @@ namespace DanonsTools.Plugins.DanonsTools.Utilities
 
             return false;
         }
-
+        
         public static Vector2 FlipX(this Vector2 vector) => FlipX((Vector3)vector);
         public static Vector2 FlipY(this Vector2 vector) => FlipY((Vector3)vector);
+        public static Vector2 Flip(this Vector2 vector) => Flip((Vector3)vector);
         public static Vector3 FlipX(this Vector3 vector) => new Vector3(vector.x * -1f, vector.y, vector.z);
         public static Vector3 FlipY(this Vector3 vector) => new Vector3(vector.x, vector.y * -1f, vector.z);
         public static Vector3 FlipZ(this Vector3 vector) => new Vector3(vector.x, vector.y * -1f, vector.z);
+        
+        public static Vector3 Flip(this Vector3 vector) => new Vector3(vector.x * -1f, vector.y * -1f, vector.z * -1f);
 
         public static void DebugAll<T>(this List<T> list, Func<T, string> property)
         {
@@ -984,6 +987,23 @@ namespace DanonsTools.Plugins.DanonsTools.Utilities
             }
 
             return min;
+        }
+        
+        public static T GetMaxWithProp<T>(this IEnumerable<T> list, Func<T, float> property)
+        {
+            float maxProp = Mathf.NegativeInfinity;
+            T max = default;
+            foreach (T element in list)
+            {
+                float prop = property(element);
+                if (prop > maxProp)
+                {
+                    maxProp = prop;
+                    max = element;
+                }
+            }
+
+            return max;
         }
         
         public static float MinDistToLineSeg(Vector2 A, Vector2 B, Vector2 E)
@@ -1091,6 +1111,47 @@ namespace DanonsTools.Plugins.DanonsTools.Utilities
             }
 
             return points;
+        }
+
+        public static float Abs(this float f) => Mathf.Abs(f);
+        public static int Abs(this int f) => Mathf.Abs(f);
+
+        public static Vector2 FindBoundsOfSetOfPoints(List<Vector2> points)
+        {
+            float biggestX = Mathf.NegativeInfinity, biggestY = Mathf.NegativeInfinity;
+            float smallestX = Mathf.Infinity, smallestY = Mathf.Infinity;
+
+            foreach (Vector2 point in points)
+            {
+                if (point.x > biggestX)
+                    biggestX = point.x;
+                if (point.y > biggestY)
+                    biggestY = point.y;
+                if (point.x < smallestX)
+                    smallestX = point.x;
+                if (point.y < smallestY)
+                    smallestY = point.y;
+            }
+            return new Vector2(biggestX - smallestX, biggestY - smallestY);
+        }
+        
+        public static Vector2Int FindBoundsOfSetOfPoints(List<Vector2Int> points)
+        {
+            int biggestX = int.MinValue, biggestY = int.MinValue;
+            int smallestX = int.MaxValue, smallestY = int.MaxValue;
+
+            foreach (Vector2Int point in points)
+            {
+                if (point.x > biggestX)
+                    biggestX = point.x;
+                if (point.y > biggestY)
+                    biggestY = point.y;
+                if (point.x < smallestX)
+                    smallestX = point.x;
+                if (point.y < smallestY)
+                    smallestY = point.y;
+            }
+            return new Vector2Int(biggestX - smallestX + 1, biggestY - smallestY + 1);
         }
     }
 

@@ -5,7 +5,7 @@
         public ToolType type;
         public void SetPlacementType()
         {
-            Player.Singleton.toolType = type;
+            Player.Singleton.SetToolType(type);
         }
     }
 }

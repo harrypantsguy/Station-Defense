@@ -7,12 +7,15 @@ namespace _Project.Codebase
         public float radius;
         public int tileSplash;
         private bool queuedForDestruction;
-
+        private float _creationTime;
+        
         private Station station;
+        private const float MAX_LIFETIME = 5f;
 
         private void Start()
         {
             station = Station.Singleton;
+            _creationTime = Time.time;
         }
 
         private const float SPEED = 40f;
@@ -50,6 +53,12 @@ namespace _Project.Codebase
             }
             
             transform.position = newPosition;
+        }
+
+        private void Update()
+        {
+            if (Time.time > _creationTime + MAX_LIFETIME)
+                Destroy(gameObject);
         }
 
         private bool TryHitStation(Vector2 pos)

@@ -60,7 +60,7 @@ namespace _Project.Codebase
             floor.RemovePlaceable(station);
         }
 
-        public WallTile(PlaceableName placeableName, ConstructType type, Vector2Int gridPos, bool blockDeletion = false)
+        public WallTile(PlaceableName placeableName, PlaceableType type, Vector2Int gridPos, bool blockDeletion = false)
             : base(placeableName, type, gridPos, blockDeletion)
         {
         }
@@ -69,9 +69,9 @@ namespace _Project.Codebase
         {
         }
 
-        public WallTile(TileConstruct construct) : base(construct)
+        public WallTile(WallTile construct) : base(construct)
         {
-            WallTile original = construct as WallTile;
+            WallTile original = construct;
             if (original == null) Debug.LogError("Improper Tile Construct copy");
             Health = original.Health;
             floor = original.floor;
