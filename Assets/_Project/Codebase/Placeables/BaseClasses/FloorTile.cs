@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using DanonsTools.Plugins.DanonsTools.Utilities;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -34,23 +35,47 @@ namespace _Project.Codebase
             _wallTile?.Update();
         }
 
-        public override bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos)
+        public override bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos, bool considerCost, 
+            out ResourcesContainer cost, out PlacementFailCause failCause)
         {
-            return !station.IsFloorAtGridPos(gridPos) && station.HasNeighborsAtPos(gridPos);
+            cost = PlacementCost;
+            failCause = PlacementFailCause.None;
+            if (!IPlaceable.PlayerCanAfford(considerCost, cost))
+            {
+                failCause = PlacementFailCause.InsufficientFunds;
+                return false;
+            }
+
+            if (station.IsFloorAtGridPos(gridPos)
+                || !station.HasNeighborsAtPos(gridPos))
+            {
+                failCause = PlacementFailCause.ImproperLocation;
+                return false;
+            }
+
+            return true;
         }
 
-        public override void TryPlace(Station station, in Vector2Int gridPos, bool ignoreValidity)
+        public override void TryPlace(Station station, in Vector2Int gridPos, bool costResources, bool ignoreValidity)
         {
-            if (!ignoreValidity && !IsValidPlacementAtGridPos(station, gridPos)) return;
+            if (!ignoreValidity && !IsValidPlacementAtGridPos(station, gridPos, costResources, 
+                out ResourcesContainer cost, out PlacementFailCause failCause)) return;
             
             this.gridPos = gridPos;
             station.SetFloorAtGridPos(gridPos, this);
+            if (costResources)
+            {
+                Player.Singleton.resources -= PlacementCost;
+            }
         }
 
         public override bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2,
             bool borderOnly, bool returnOnValidityAssessment,
-            out List<Vector2Int> validPositions)
+            out List<Vector2Int> validPositions, bool considerCost, out ResourcesContainer cost, 
+            out PlacementFailCause failCause)
         {
+            cost = new ResourcesContainer();
+            failCause = PlacementFailCause.None;
             validPositions = new List<Vector2Int>();
             Utils.GetMinAndMax(corner1, corner2, out int minX, out int minY, out int maxX, out int maxY);
 
@@ -62,19 +87,24 @@ namespace _Project.Codebase
             int shrunkenMinX = minX + 1, shrunkenMinY = minY + 1, shrunkenMaxX = maxX - 1, shrunkenMaxY = maxY - 1;
 
             bool rectIsDeterminedValid = false;
+            bool canAffordPlacement = true;
             bool hasFoundOccupiedPos = false;
             bool hasFoundUnoccupiedPosInsideRect = false;
             List<Vector2Int> positionsToCheck = Utils.GenerateRectList(extendedMinX, extendedMinY,
                 extendedMaxX, extendedMaxY, borderOnly);
-            positionsToCheck.AddRange(Utils.GenerateRectList(minX, minY, maxX, maxY, true));
 
             bool checkingInsideRect = borderOnly && shrunkenMaxX >= shrunkenMinX && shrunkenMaxY >= shrunkenMinY;
+            
+            if (borderOnly)
+                positionsToCheck.AddRange(Utils.GenerateRectList(minX, minY, maxX, maxY, true));
             
             if (checkingInsideRect)
             {
                 positionsToCheck.AddRange(Utils.GenerateRectList(shrunkenMinX, shrunkenMinY, 
                     shrunkenMaxX, shrunkenMaxY, true));
             }
+
+            //Debug.Log($"positions to check: {positionsToCheck.GetEnumeratedString(pos => pos.ToString())}");
             
             foreach (Vector2Int pos in positionsToCheck)
             {
@@ -114,10 +144,25 @@ namespace _Project.Codebase
                     isGridPosOccupied = station.IsFloorAtGridPos(pos);
 
                 if (!isGridPosOccupied)
+                {
                     validPositions.Add(pos);
+                    cost += PlacementCost;
+                }
 
+                if (canAffordPlacement && !IPlaceable.PlayerCanAfford(considerCost, cost))
+                {
+                    canAffordPlacement = false;
+                    failCause = PlacementFailCause.InsufficientFunds;
+                    if (returnOnValidityAssessment) return false;
+                }
             }
-            return rectIsDeterminedValid;
+
+            if (!canAffordPlacement)
+                failCause = PlacementFailCause.InsufficientFunds;
+            else if (!rectIsDeterminedValid)
+                failCause = PlacementFailCause.ImproperLocation;
+            
+            return rectIsDeterminedValid && canAffordPlacement;
         }
 
         public override void Delete(Station station)

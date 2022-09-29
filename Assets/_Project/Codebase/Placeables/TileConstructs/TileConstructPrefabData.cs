@@ -9,6 +9,7 @@ namespace _Project.Codebase
     {
         public PlaceableName placeableName;
         public PlaceableType type;
+        public ResourcesContainer placementCost;
         public Sprite sprite;
         public Tile tile;
     }

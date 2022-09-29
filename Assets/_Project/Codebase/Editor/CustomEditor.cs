@@ -1,4 +1,5 @@
-﻿using DanonsTools.Plugins.DanonsTools.Utilities;
+﻿using System;
+using DanonsTools.Plugins.DanonsTools.Utilities;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -82,6 +83,11 @@ namespace _Project.CodeBase.Editor
                 radius = newRadius;
 
             return changedValue;
+        }
+        
+        protected void AddEnumField<K>(ref K e, string label, params GUILayoutOption[] options) where K : Enum
+        {
+            e = (K)EditorGUILayout.EnumPopup(label, e, options);
         }
         
         protected void AddObjectFieldNoFormat<K>(ref K obj, string label, params GUILayoutOption[] options) where K : Object

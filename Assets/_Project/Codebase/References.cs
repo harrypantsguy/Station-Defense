@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -48,5 +47,14 @@ namespace _Project.Codebase
         public Tile GetTile(PlaceableName name) => _constructData[name].tile;
 
         public GameObject GetStructure(PlaceableName name) => _structureData[name].structurePrefab;
+
+        public ResourcesContainer GetCost(PlaceableName name)
+        {
+            if (_constructData.TryGetValue(name, out TileConstructPrefabData data))
+                return data.placementCost;
+            return _structureData[name].placementCost;
+        }
+
+        public StructurePrefabData GetStructurePrefabData(PlaceableName name) => _structureData[name];
     }
 }

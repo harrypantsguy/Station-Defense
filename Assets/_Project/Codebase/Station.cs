@@ -18,10 +18,12 @@ namespace _Project.Codebase
             _powerCore.BlockDeletion = true;
             FloorTile powerCoreFloorTile = new FloorTile(PlaceableName.GratedFloor, true);
             powerCoreFloorTile.TryFillRect(this,
-                 new Vector2Int(-3, -3), new Vector2Int(2,2), true, true);
+                 new Vector2Int(-3, -3), new Vector2Int(2,2), 
+                 true, false, true);
             powerCoreFloorTile.SetPlaceable(this, _powerCore);
             powerCoreFloorTile.TryFillRect(this,
-                new Vector2Int(-2, -2), new Vector2Int(1,1), false, true);
+                new Vector2Int(-2, -2), new Vector2Int(1, 1), 
+                false, false, true);
         }
 
         private void Update()
@@ -125,12 +127,12 @@ namespace _Project.Codebase
                    IsFloorAtGridPos(gridPos + new Vector2Int(0, -1));
         }
 
-        public void FillPositionsWithConstruct(List<Vector2Int> positions, TileConstruct construct)
+        public void FillPositionsWithConstruct(List<Vector2Int> positions, TileConstruct construct, bool costResources)
         {
             foreach (Vector2Int pos in positions)
             {
                 IPlaceable newTile = IPlaceable.MakeCopy(construct);
-                newTile.TryPlace(this, pos, true);
+                newTile.TryPlace(this, pos, costResources, true);
             }
         }
 

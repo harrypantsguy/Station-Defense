@@ -11,6 +11,7 @@ namespace _Project.Codebase
         [SerializeField] private GameObject _graphics;
         public PlaceableName PlaceableName { get; set; }
         public PlaceableType Type { get; set; }
+        public ResourcesContainer PlacementCost { get; set; }
         public bool BlockDeletion { get; set; }
         public float BuildProgress { get; set; }
         public bool Built { get; private set; }
@@ -35,7 +36,13 @@ namespace _Project.Codebase
             }
         }
 
-
+        public void Initialize(StructurePrefabData data)
+        {
+            PlaceableName = data.placeableName;
+            PlacementCost = data.placementCost;
+            Type = PlaceableType.Structure;
+        }
+        
         protected virtual void Start()
         {
             SetDimensionsAndUpdateData();
@@ -76,9 +83,8 @@ namespace _Project.Codebase
             Vector2 offset = xEven && yEven ? new Vector2(.5f, .5f) : Vector2.zero;
             transformedLocalPositions =
                 _localPositions.GetElementFromAll(
-                    vector => (Direction.TransformVectorInDirection(vector - pivot
-                                                                    + offset) - offset)
-                        .ToInt());
+                    vector => 
+                        (Direction.TransformVectorInDirection(vector - pivot + offset) - offset).ToInt());
         }
 
         public void TakeDamage()
@@ -89,18 +95,33 @@ namespace _Project.Codebase
         {
         }
 
-
-        public bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos)
+        public bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos, bool considerCost, 
+            out ResourcesContainer cost, out PlacementFailCause failCause)
         {
+            cost = PlacementCost;
+            failCause = PlacementFailCause.None;
+            if (!IPlaceable.PlayerCanAfford(considerCost, cost))
+            {
+                failCause = PlacementFailCause.InsufficientFunds;
+                return false;
+            }
+            
             foreach (Vector2Int pos in transformedLocalPositions)
-                if (!station.DoesGridPosHaveFloorButNoPlaceable(gridPos + pos)) return false;
+            {
+                if (!station.DoesGridPosHaveFloorButNoPlaceable(gridPos + pos))
+                {
+                    failCause = PlacementFailCause.ImproperLocation;
+                    return false;
+                }
+            }
 
             return true;
         }
 
-        public void TryPlace(Station station, in Vector2Int gridPos, bool ignoreValidity)
+        public void TryPlace(Station station, in Vector2Int gridPos, bool costResources, bool ignoreValidity)
         {
-            if (!ignoreValidity && !IsValidPlacementAtGridPos(station, gridPos)) return;
+            if (!ignoreValidity && !IsValidPlacementAtGridPos(station, gridPos, costResources, 
+                out ResourcesContainer cost, out PlacementFailCause cause)) return;
 
             foreach (Vector2Int localPos in transformedLocalPositions)
             {
@@ -114,17 +135,23 @@ namespace _Project.Codebase
 
             Built = true;
             SetGridPosition(station, gridPos);
+            
+            if (costResources)
+                Player.Singleton.resources -= PlacementCost;
         }
 
         public bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2, bool borderOnly,
-            bool returnOnValidityAssessment, out List<Vector2Int> validPositions)
+            bool returnOnValidityAssessment, out List<Vector2Int> validPositions, bool considerCost, 
+            out ResourcesContainer cost, out PlacementFailCause cause)
         {
             validPositions = new List<Vector2Int>();
+            cost = default;
+            cause = PlacementFailCause.None;
             return false;
         }
 
         public void TryFillRect(Station station, in Vector2Int corner1, in Vector2Int corner2, bool borderOnly,
-            bool ignoreValidity = false)
+            bool costResources = true, bool ignoreValidity = false)
         {
         }
 

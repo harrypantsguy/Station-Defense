@@ -9,6 +9,7 @@ namespace _Project.Codebase
     {
         public PlaceableName PlaceableName { get; set; }
         public PlaceableType Type { get; set; }
+        public ResourcesContainer PlacementCost { get; set; }
         public bool BlockDeletion { get; set; }
         public float BuildProgress { get; set; }
         public bool Built => BuildProgress >= 1f;
@@ -21,6 +22,7 @@ namespace _Project.Codebase
             BlockDeletion = blockDeletion;
             Type = type;
             this.gridPos = gridPos;
+            PlacementCost = References.Singleton.GetCost(PlaceableName);
         }
 
         public TileConstruct(PlaceableName placeableName, bool blockDeletion = false) : this(placeableName,
@@ -42,18 +44,22 @@ namespace _Project.Codebase
             }
         }
         
-        public abstract bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos);
+        public abstract bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos, bool considerCost, 
+            out ResourcesContainer cost, out PlacementFailCause failCause);
 
-        public abstract void TryPlace(Station station, in Vector2Int gridPos, bool ignoreValidity = false);
+        public abstract void TryPlace(Station station, in Vector2Int gridPos, bool costResources = true, bool ignoreValidity = false);
         public abstract bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2, 
-            bool borderOnly, bool returnOnValidityAssessment, out List<Vector2Int> validPositions);
+            bool borderOnly, bool returnOnValidityAssessment, out List<Vector2Int> validPositions, bool considerCost, 
+            out ResourcesContainer cost, out PlacementFailCause failCause);
 
-        public virtual void TryFillRect(Station station, in Vector2Int corner1, in Vector2Int corner2, bool borderOnly,
-            bool ignoreValidity = false)
+        public virtual void TryFillRect(Station station, in Vector2Int corner1, in Vector2Int corner2, bool borderOnly, 
+            bool costResources = true, bool ignoreValidity = false)
         {
-            if (IsValidRectPlacement(station, corner1, corner2, borderOnly, false, out List<Vector2Int> validPositions)
+            if (IsValidRectPlacement(station, corner1, corner2, borderOnly, false, 
+                    out List<Vector2Int> validPositions, costResources, 
+                    out ResourcesContainer cost, out PlacementFailCause failCause)
                 || ignoreValidity) 
-                station.FillPositionsWithConstruct(validPositions, this);
+                station.FillPositionsWithConstruct(validPositions, this, costResources);
         }
 
         public abstract void Delete(Station station);

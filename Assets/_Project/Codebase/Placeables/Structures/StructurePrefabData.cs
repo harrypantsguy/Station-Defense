@@ -7,6 +7,7 @@ namespace _Project.Codebase
     public struct StructurePrefabData
     {
         public PlaceableName placeableName;
+        public ResourcesContainer placementCost;
         public GameObject structurePrefab;
         public Sprite sprite;
     }

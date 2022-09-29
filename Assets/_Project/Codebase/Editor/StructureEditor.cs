@@ -8,12 +8,35 @@ namespace _Project.CodeBase.Editor
     [CanEditMultipleObjects]
     public class StructureEditor : CustomEditor<Structure>
     {
+        private PlaceableScriptable _scriptable;
+        private PlaceableName _name;
+
         public override void OnInspectorGUI()
         {
-            base.OnInspectorGUI();
-
+            /*
             if (Application.isEditor)
-                CastedTarget.Direction = (Direction)EditorGUILayout.EnumPopup("Direction", CastedTarget.Direction);
+            {
+                EditorGUI.BeginChangeCheck();
+                AddEnumField(ref _name, "Structure Name");
+                AddObjectField(ref _scriptable, "Scriptable");
+                if (EditorGUI.EndChangeCheck())
+                {
+                    if (_scriptable != null)
+                    {
+                        StructurePrefabData structureData = _scriptable.structureData.Find(data => data.placeableName == _name);
+                        CastedTarget.PlaceableName = structureData.placeableName;
+                        CastedTarget.Type = PlaceableType.Structure;
+                        CastedTarget.PlacementCost = structureData.placementCost;
+                        Debug.Log("Assigned structure data");
+                    }
+                }
+            }
+            */
+            
+            base.OnInspectorGUI();
+            
+            if (Application.isEditor)
+                CastedTarget.Direction = (Direction) EditorGUILayout.EnumPopup("Direction", CastedTarget.Direction);
         }
 
         protected override void OnSceneGUI()

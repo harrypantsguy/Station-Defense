@@ -8,14 +8,26 @@ namespace _Project.Codebase
     {
         public static List<CustomUI> elementsWithMouseOver = new List<CustomUI>();
         public static bool MouseOverUI => elementsWithMouseOver.Count > 0;
+        public virtual bool FlagWhenMouseOver => true;
+        protected RectTransform rectTransform;
+
+        protected virtual void Awake()
+        {
+            rectTransform = GetComponent<RectTransform>();        
+        }
+
+        protected virtual void Start() { }
+
         public void OnPointerEnter(PointerEventData eventData)
         {
-            elementsWithMouseOver.Add(this);
+            if (FlagWhenMouseOver)
+                elementsWithMouseOver.Add(this);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            elementsWithMouseOver.Remove(this);
+            if (FlagWhenMouseOver)
+                elementsWithMouseOver.Remove(this);
         }
         
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
