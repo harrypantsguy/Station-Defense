@@ -9,6 +9,7 @@ namespace _Project.Codebase
     {
         public PlaceableName PlaceableName { get; set; }
         public PlaceableType Type { get; set; }
+        public Station Station { get; set; }
         public ResourcesContainer PlacementCost { get; set; }
         public bool BlockDeletion { get; set; }
         public float BuildProgress { get; set; }
@@ -62,6 +63,6 @@ namespace _Project.Codebase
                 station.FillPositionsWithConstruct(validPositions, this, costResources);
         }
 
-        public abstract void Delete(Station station);
+        public abstract void Delete();
     }
 }

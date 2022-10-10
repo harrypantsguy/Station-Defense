@@ -18,17 +18,15 @@ namespace _Project.Codebase
             if (Time.time > _lastFireTime + 1.5f)
             {
                 _lastFireTime = Time.time;
-                
-                GameObject newProjectile = Instantiate(_projectilePrefab);
-                newProjectile.transform.position = transform.position;
-                newProjectile.transform.right = transform.up;
+
+                //Projectile.FireProjectile(_projectilePrefab, transform.position, Vector2.zero, Layers.WorldMask);
             }
             
-            float timeSample = Time.time * Mathf.PI / 5f;
-            float radius = 20f;
-            transform.position =
-                new Vector2(Mathf.Cos(timeSample) * radius, Mathf.Sin(timeSample) * radius);
-            transform.up = -transform.position;
+            //float timeSample = Time.time * Mathf.PI / 5f;
+            //float radius = 20f;
+           // transform.position =
+            //    new Vector2(Mathf.Cos(timeSample) * radius, Mathf.Sin(timeSample) * radius);
+            //transform.up = -transform.position;
         }
     }
 }

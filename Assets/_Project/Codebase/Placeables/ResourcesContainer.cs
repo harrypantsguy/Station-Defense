@@ -14,6 +14,8 @@ namespace _Project.Codebase
 
         public override string ToString() => $"{{credits: {credits}}}";
 
+        public bool EqualsZero() => credits == 0;
+
         public static ResourcesContainer operator +(ResourcesContainer a, ResourcesContainer b) => 
             new ResourcesContainer(a.credits + b.credits);
         public static ResourcesContainer operator -(ResourcesContainer a, ResourcesContainer b) => 

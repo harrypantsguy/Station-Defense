@@ -69,8 +69,8 @@ namespace _Project.Codebase
             
             _costText.text = _player.PlacementCost.credits.ToString();
             _costText.color = _player.HasValidPlacement ? Color.white : Color.red;
-            _costText.enabled = _player.PlaceableName != PlaceableName.None;
-            Debug.Log(_player.PlacementFailCause.ToString());
+            _costText.enabled = _player.PlaceableName != PlaceableName.None && !_player.PlacementCost.EqualsZero();
+            //Debug.Log(_player.PlacementFailCause.ToString());
             
             if (_player.DrawingRect)
             {

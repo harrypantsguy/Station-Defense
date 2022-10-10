@@ -40,7 +40,7 @@ namespace _Project.Codebase
         {
             _lastFireTime = Time.time;
             _cam = CameraController.Singleton.Camera;
-            resources = new ResourcesContainer(100);
+            resources = new ResourcesContainer(9999);
             
             GenerateNewPlaceable();
         }
@@ -179,7 +179,7 @@ namespace _Project.Codebase
                             Station.Singleton.TryRemoveFloorAtGridPos(MouseGridPos);
                         else if (Station.Singleton.TryGetPlaceableAtGridPos(MouseGridPos, out IPlaceable placeable))
                         {
-                            placeable.Delete(Station.Singleton);
+                            placeable.Delete();
                         }
                     }
                 }

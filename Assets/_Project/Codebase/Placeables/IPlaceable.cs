@@ -8,6 +8,7 @@ namespace _Project.Codebase
     {
         public PlaceableName PlaceableName { get; set; }
         public PlaceableType Type { get; set; }
+        public Station Station { get; set; }
         public ResourcesContainer PlacementCost { get; set; }
         public bool BlockDeletion { get; set; }
         public float BuildProgress { get; set; }
@@ -20,7 +21,7 @@ namespace _Project.Codebase
             out ResourcesContainer cost, out PlacementFailCause failCause);
         public void TryFillRect(Station station, in Vector2Int corner1, in Vector2Int corner2, bool borderOnly, 
             bool costResources = true, bool ignoreValidity = false);
-        public void Delete(Station station);
+        public void Delete();
 
         public static bool PlayerCanAfford(bool considerCost, ResourcesContainer cost) => !considerCost || 
                                                                                           Player.CanAfford(cost);

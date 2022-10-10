@@ -4,15 +4,27 @@ using UnityEngine;
 
 namespace _Project.Codebase
 {
-    public class WallTile : TileConstruct, IDestroyable
+    public class WallTile : TileConstruct, IDamageable
     {
-        public float Health { get; set; } = 100f;
+        public int Health { get; set; } = 100;
         public FloorTile floor;
-        public void TakeDamage()
+
+        public DamageReport TakeDamage(DamageReport damage)
         {
+            int actualDamage = Mathf.Min(damage.damage, Health);
+            Health -= actualDamage;
+
+            if (Health == 0)
+            {
+                Die();
+            }
+            
+            return new DamageReport(damage.damage - actualDamage);
         }
+
         public void Die()
         {
+            Delete();
         }
 
         public override bool IsValidPlacementAtGridPos(Station station, in Vector2Int gridPos, bool considerCost,
@@ -47,6 +59,7 @@ namespace _Project.Codebase
             floor.SetPlaceable(station, this);
             if (costResources)
                 Player.Singleton.resources -= PlacementCost;
+            Station = station;
         }
 
         public override bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2, bool borderOnly, 
@@ -81,10 +94,10 @@ namespace _Project.Codebase
             return hasFoundValidPos && canAfford;
         }
 
-        public override void Delete(Station station)
+        public override void Delete()
         {
             if (BlockDeletion) return;
-            floor.RemovePlaceable(station);
+            floor.RemovePlaceable();
         }
 
         public WallTile(PlaceableName placeableName, PlaceableType type, Vector2Int gridPos, bool blockDeletion = false)
@@ -99,7 +112,11 @@ namespace _Project.Codebase
         public WallTile(WallTile construct) : base(construct)
         {
             WallTile original = construct;
-            if (original == null) Debug.LogError("Improper Tile Construct copy");
+            if (original == null)
+            {
+                Debug.LogError("Improper Tile Construct copy");
+                return;
+            }
             Health = original.Health;
             floor = original.floor;
         }

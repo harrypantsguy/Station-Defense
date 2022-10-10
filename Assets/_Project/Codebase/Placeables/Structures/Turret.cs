@@ -8,21 +8,35 @@ namespace _Project.Codebase
         [SerializeField] private GameObject _turretBarrelObj;
         [SerializeField] private Transform _projectileSpawnPos;
         [SerializeField] private GameObject _projectilePrefab;
+        
+        public Vector2 target;
+
+        private float _lastFireTime;
+        
+        private const float FIRE_DELAY = .5f;
+
+        protected override void Start()
+        {
+            base.Start();
+
+            _lastFireTime = Time.time;
+        }
 
         protected override void Update()
         {
             base.Update();
 
+            target = Utils.WorldMousePos;
+            
             if (Built)
             {
-                _turretBarrelObj.transform.right = (Utils.WorldMousePos - (Vector2) transform.position).normalized;
+                _turretBarrelObj.transform.right = (target - (Vector2) transform.position).normalized;
             }
 
-            if (GameControls.FireDefenses.IsPressed)
+            if (GameControls.FireDefenses.IsHeld && Time.time > _lastFireTime + FIRE_DELAY)
             {
-                GameObject newProjectile = Instantiate(_projectilePrefab);
-                newProjectile.transform.position = _projectileSpawnPos.position;
-                newProjectile.transform.right = _turretBarrelObj.transform.right;
+                _lastFireTime = Time.time;
+                Projectile.FireProjectile(_projectilePrefab, _projectileSpawnPos.position, target, Layers.EnemyMask);
             }
         }
     }

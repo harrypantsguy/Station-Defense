@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using DanonsTools.Plugins.DanonsTools.Utilities;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 namespace _Project.Codebase
 {
-    public class FloorTile : TileConstruct
+    public class FloorTile : TileConstruct, IDamageable
     {
         public IPlaceable Placeable { get; private set; }
         private WallTile _wallTile;
+        public int Health { get; set; } = 100;
+        
         
         public FloorTile(PlaceableName placeableName, Vector2Int gridPos, bool blockDeletion = false) :
             base(placeableName, PlaceableType.Floor, gridPos, blockDeletion)
@@ -64,9 +65,9 @@ namespace _Project.Codebase
             this.gridPos = gridPos;
             station.SetFloorAtGridPos(gridPos, this);
             if (costResources)
-            {
                 Player.Singleton.resources -= PlacementCost;
-            }
+
+            Station = station;
         }
 
         public override bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2,
@@ -165,17 +166,17 @@ namespace _Project.Codebase
             return rectIsDeterminedValid && canAffordPlacement;
         }
 
-        public override void Delete(Station station)
+        public override void Delete()
         {
             if (Placeable != null)
             {
                 if (Placeable.BlockDeletion) return;
-                Placeable.Delete(station);
+                Placeable.Delete();
             }
 
             if (BlockDeletion) return;
             
-            station.RemoveFloorFromDictAndTilemapAtGridPos(gridPos);
+            Station.RemoveFloorFromDictAndTilemapAtGridPos(gridPos);
         }
 
         public void SetPlaceable(Station station, IPlaceable placeable)
@@ -188,11 +189,33 @@ namespace _Project.Codebase
             }
         }
 
-        public void RemovePlaceable(Station station)
+        public void RemovePlaceable()
         {
             Placeable = null;
             _wallTile = null;
-            station.SetWallMapTile((Vector3Int) gridPos, null);
+            Station.SetWallMapTile((Vector3Int) gridPos, null);
+        }
+
+        public DamageReport TakeDamage(DamageReport damage)
+        {
+            if (Placeable != null && Placeable is IDamageable damageable)
+            {
+                damage = damageable.TakeDamage(damage);
+            }
+            
+            Health = Mathf.Max(Health - damage.damage, 0);
+
+            if (Health <= 0f)
+            {
+                Die();
+            }
+
+            return damage;
+        }
+
+        public void Die()
+        {
+            Delete();
         }
     }
 }

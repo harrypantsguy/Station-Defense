@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 0.25
-  tileSplash: 3
+  splashRange: 1
 --- !u!212 &8490927887306847384
 SpriteRenderer:
   m_ObjectHideFlags: 0

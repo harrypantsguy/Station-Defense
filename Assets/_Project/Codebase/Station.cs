@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using DanonsTools.Plugins.DanonsTools.Utilities;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -11,7 +13,7 @@ namespace _Project.Codebase
         [SerializeField] private Tilemap _floorMap;
         [SerializeField] private Structure _powerCore;
         
-        private Dictionary<Vector2Int, FloorTile> _floorGrid = new Dictionary<Vector2Int, FloorTile>();
+        private readonly Dictionary<Vector2Int, FloorTile> _floorGrid = new Dictionary<Vector2Int, FloorTile>();
 
         private void Start()
         {
@@ -30,7 +32,17 @@ namespace _Project.Codebase
         {
             foreach (FloorTile tile in _floorGrid.Values)
             {
-                tile.Update();
+                //tile.Update();
+            }
+        }
+
+        private void OnDrawGizmos()
+        {
+            foreach (KeyValuePair<Vector2Int, FloorTile> floor in _floorGrid)
+            {
+                Handles.Label(GridToWorldPos(floor.Key), floor.Value.Health.ToString());
+                if (floor.Value.Placeable != null)
+                    Handles.Label(GridToWorldPos(floor.Key), (floor.Value.Placeable as IDamageable).Health.ToString());
             }
         }
 
@@ -58,9 +70,10 @@ namespace _Project.Codebase
         {
             if (TryGetFloorAtGridPos(gridPos, out FloorTile floor))
             {
-                floor.Delete(this);
+                floor.Delete();
             }
         }
+
         /// <summary>
         /// Doesn't call .Delete() on floor tile. Likely to be called from a TileConstruct. 
         /// </summary>
@@ -143,53 +156,14 @@ namespace _Project.Codebase
                 if (type == PlaceableType.Floor)
                 {
                     if (TryGetFloorAtGridPos(pos, out FloorTile floor))
-                        floor.Delete(this);
+                        floor.Delete();
                 }
                 else
                 {
                     if (TryGetPlaceableAtGridPos(pos, out IPlaceable placeable))
-                        placeable.Delete(this);
+                        placeable.Delete();
                 }
             }
-        }
-
-        public bool TakeDamage(Vector2 location, int tileSplash)
-        {
-            return true;
-           // Debug.Log("hit");
-            //if (!TryGetStructureAtPos(location, out TileConstruct hitStructure))
-            {
-                //Debug.Break();
-                //Debug.LogError("failed to locate ConstructTile at hit point");
-                Debug.DrawLine(Vector2.zero, location, Color.red);
-                return false;
-            }
-
-            for (int x = -tileSplash; x <= tileSplash; x++)
-            {
-                for (int y = -tileSplash; y <= tileSplash; y++)
-                {
-                    Vector2Int localGridPos = new Vector2Int(x, y);
-                    float distance = Mathf.Sqrt(Mathf.Pow(localGridPos.x, 2f)
-                                                + Mathf.Pow(localGridPos.y, 2f));
-                    float maxDistance = tileSplash + .5f;
-                    bool inCircle = distance <= maxDistance;
-                    if (!inCircle) continue;
-                    
-                    //Vector2Int gridPos = hitStructure.gridPos + localGridPos;
-                    
-                    
-                    //if (!TryGetConstructAtGridPos(gridPos, out TileConstruct splashStructure))
-                        continue;
-                    
-                   // splashStructure.health -= 100f * 1f; //Mathf.Pow(.5f, 4f * (distance  / maxDistance));
-                    //if (splashStructure.health <= 0f)
-                    //    RemoveStructure(gridPos);
-                    //    RemoveStructure(gridPos);
-                }
-            }
-
-            return true;
         }
     }
 }

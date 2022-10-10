@@ -5,18 +5,19 @@ using UnityEngine;
 
 namespace _Project.Codebase
 {
-    public class Structure : MonoBehaviour, IDestroyable, IPlaceable
+    public class Structure : MonoBehaviour, IDamageable, IPlaceable
     {
         [SerializeField] private List<Vector2Int> _localPositions = new List<Vector2Int>();
         [SerializeField] private GameObject _graphics;
         public PlaceableName PlaceableName { get; set; }
         public PlaceableType Type { get; set; }
+        public Station Station { get; set; }
         public ResourcesContainer PlacementCost { get; set; }
         public bool BlockDeletion { get; set; }
         public float BuildProgress { get; set; }
         public bool Built { get; private set; }
         public Vector2Int pivot;
-        public float Health { get; set; } = 100f;
+        public int Health { get; set; } = 100;
         public Vector2 Dimensions { get; private set; }
         public List<Vector2Int> transformedLocalPositions = new List<Vector2Int>();
         public bool xEven, yEven;
@@ -87,8 +88,17 @@ namespace _Project.Codebase
                         (Direction.TransformVectorInDirection(vector - pivot + offset) - offset).ToInt());
         }
 
-        public void TakeDamage()
+        public DamageReport TakeDamage(DamageReport damage)
         {
+            int actualDamage = damage.damage >= Health ? damage.damage - Health : damage.damage;
+            Health -= actualDamage;
+
+            if (Health <= 0f)
+            {
+                Die();
+            }
+            
+            return new DamageReport(damage.damage - actualDamage);
         }
 
         public void Die()
@@ -138,6 +148,8 @@ namespace _Project.Codebase
             
             if (costResources)
                 Player.Singleton.resources -= PlacementCost;
+            
+            Station = station;
         }
 
         public bool IsValidRectPlacement(Station station, in Vector2Int corner1, in Vector2Int corner2, bool borderOnly,
@@ -155,11 +167,11 @@ namespace _Project.Codebase
         {
         }
 
-        public void Delete(Station station)
+        public void Delete()
         {
             if (BlockDeletion) return;
             foreach (FloorTile floor in _floors)
-                floor.RemovePlaceable(station);
+                floor.RemovePlaceable();
             Destroy(gameObject);
         }
 
