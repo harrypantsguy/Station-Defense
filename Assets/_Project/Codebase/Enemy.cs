@@ -2,7 +2,7 @@
 
 namespace _Project.Codebase
 {
-    public class Enemy : MonoBehaviour
+    public class Enemy : Spacecraft
     {
         [SerializeField] private GameObject _projectilePrefab;
 

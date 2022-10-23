@@ -18,9 +18,9 @@ namespace _Project.Codebase
             Collider2D[] hits = Physics2D.OverlapCircleAll(pos, size);
             foreach (Collider2D hit in hits)
             {
-                if (hit.TryGetComponent(out ObjectSegment segment))
+                if (hit.TryGetComponent(out SpacecraftPart shipPart))
                 {
-                    Object.Destroy(segment.gameObject);
+                    shipPart.TakeDamage(new DamageReport(50));
                 }
             }
 
